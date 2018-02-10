@@ -1,0 +1,7 @@
+*.java
+*.bat
+*.class
+/src - Copy/
+/bin/
+.project
+*.sh
