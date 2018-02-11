@@ -32,7 +32,7 @@ class Client {
 		} else if (args[0].toLowerCase().equals("quit")) {
 			Report.errorAndGiveUp("Name of client can't be \"quit\"");
 		}
-		
+
 		// Initialize information:
 		String nickname = args[0];
 		String hostname = args[1];

@@ -10,48 +10,72 @@ import java.io.PrintStream;
 
 public class ClientSender extends Thread {
 
-  private String nickname;
-  private PrintStream server;
+	private String nickname;
+	private PrintStream server;
+	private boolean running;
 
-  ClientSender(String nickname, PrintStream server) {
-    this.nickname = nickname;
-    this.server = server;
-  }
+	ClientSender(String nickname, PrintStream server) {
+		this.nickname = nickname;
+		this.server = server;
+		running = true;
+	}
 
-  /**
-   * Start ClientSender thread.
-   */
-  public void run() {
-    // So that we can use the method readLine:
-    BufferedReader user = new BufferedReader(new InputStreamReader(System.in));
+	/**
+	 * Start ClientSender thread.
+	 */
+	public void run() {
+		// So that we can use the method readLine:
+		BufferedReader user = new BufferedReader(new InputStreamReader(System.in));
 
-    try {
-      // Then loop forever sending messages to recipients via the server:
-      while (true) {
-        String userInput = user.readLine();
+		try {
+			// Then loop forever sending messages to recipients via the server:
+			while (running) {
+				// readLine reads the inital command - register, login, logout, send, previous,
+				// next, delete, quit
+				String userInput = user.readLine().toLowerCase();
 
-        if (userInput.toLowerCase().equals("quit")) {
-          server.println(userInput);
-          break;
-        }
-        
-        //register, login, logout, send, previous, next, delete
-        
-        // Disallow null recipients
-        if (userInput.equals("")) {
-        	System.out.println("Recipient cannot be null");
-        } else {
-        	server.println(userInput); // Matches CCCCC in ServerReceiver
-        	String text = user.readLine();
-            server.println(text);      // Matches DDDDD in ServerReceiver
-        }
-        
-      }
-    } catch (IOException e) {
-      Report.errorAndGiveUp("Communication broke in ClientSender"
-                        + e.getMessage());
-    }
+				// According to what has been input, ask the user for the right amount of input
+				// following the initial command
+				switch (userInput) {
+				case "quit":
+					server.println(userInput); // Matches CCCCC in ServerReceiver
+					running = false;
+					break;
+				case "register":
+				case "login":
+					server.println(userInput); // Matches CCCCC in ServerReceiver
+					userInput = user.readLine();
+					server.println(userInput);
+					if (userInput.equals("")) {
+						System.out.println("User cannot be null. Try another command.");
+					} else {
+						userInput = user.readLine();
+						server.println(userInput);
+					}
+				case "logout":
+				case "previous":
+				case "next":
+				case "delete":
+					server.println(userInput); // Matches CCCCC in ServerReceiver
+				case "send":
+					server.println(userInput); // Matches CCCCC in ServerReceiver
+					userInput = user.readLine();
+					server.println(userInput);
+					if (userInput.equals("")) {
+						System.out.println("Recipient cannot be null");
+					} else {
+						String text = user.readLine();
+						server.println(text);
+					}
+				default:
+					System.out.println("Command not recognised. Please enter one of register, login, logout, send, "
+							+ "previous, next, delete, quit");
+				}
+			}
+		} catch (IOException e) {
+			Report.errorAndGiveUp("Communication broke in ClientSender" + e.getMessage());
+		}
 
-    Report.behaviour("Client sender thread ending"); // Matches GGGGG in Client.java
-  }
+		Report.behaviour("Client sender thread ending"); // Matches GGGGG in Client.java
+	}
 }
