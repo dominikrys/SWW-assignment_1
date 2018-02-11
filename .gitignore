@@ -1,8 +1,6 @@
-*.java
 *.bat
 *.class
-/src - Copy/
 /bin/
 .project
 *.sh
-/samplesolution/
+/sample-solution/
