@@ -9,9 +9,11 @@ import java.net.SocketException;
 public class ClientReceiver extends Thread {
 
 	private BufferedReader server;
+	private boolean loggedIn;
 
 	ClientReceiver(BufferedReader server) {
 		this.server = server;
+		loggedIn = false;
 	}
 
 	/**
@@ -21,13 +23,28 @@ public class ClientReceiver extends Thread {
 		// Print to the user whatever we get from the server:
 		try {
 			while (true) {
-				String s = server.readLine(); // Matches FFFFF in ServerSender.java
+				String receivedMessage = server.readLine(); // Matches FFFFF in ServerSender.java
+				
+				// Extract sender in case it's the server
+				String firstWord = "Magic Word";
+				
+				// Check if it's a message from the server
+				String sender = receivedMessage.substring(0, firstWord.indexOf(" "));
+				
+				if (sender.toLowerCase().equals("server")) {
+					if (receivedMessage.toLowerCase().contains("logged in".toLowerCase())) {
+						loggedIn = true;
+						
+					}
+				}
 
-				if (s == null) {
+				// If null message, some kind of error occured
+				if (receivedMessage == null) {
 					throw new NullPointerException();
 				}
 
-				System.out.println(s);
+				// Print the message
+				System.out.println(receivedMessage);
 			}
 		} catch (SocketException e) { // Matches HHHHH in Client.java
 			Report.behaviour("Client receiver ending");
@@ -35,6 +52,12 @@ public class ClientReceiver extends Thread {
 			Report.errorAndGiveUp("Server seems to have died " + (e.getMessage() == null ? "" : e.getMessage()));
 		}
 	}
+	
+	public boolean getLoggedInStatus() {
+		return loggedIn;
+	}
+	
+	public String 
 }
 
 /*

@@ -2,15 +2,20 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
+import java.util.LinkedHashMap;
 
 // Gets messages from client and puts them in a queue, for another
 // thread to forward to the appropriate client.
 
 public class ServerReceiver extends Thread {
 	private String myClientsName;
+	private int myClientsId;
 	private BufferedReader myClient;
 	private ClientTable clientTable;
 	private ServerSender companion;
+	private boolean running;
+	private LinkedHashMap<String, Integer> nicknameToIdMap = new LinkedHashMap<String, Integer>();
+	private boolean loggedIn;
 
 	/**
 	 * Constructs a new server receiver.
@@ -24,41 +29,106 @@ public class ServerReceiver extends Thread {
 	 * @param s
 	 *            the corresponding sender for this receiver
 	 */
-	public ServerReceiver(String n, BufferedReader c, ClientTable t, ServerSender s) {
-		myClientsName = n;
+	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s, LinkedHashMap<Integer, String> _nicknameToIDMap) {
+		myClientsId = id;
 		myClient = c;
 		clientTable = t;
 		companion = s;
+		nicknameToIdMap = _nicknameToIdMap;
+		loggedIn = false;
+		running = true;
 	}
 
+	public String getName() {
+		return myClientsName;
+	}
+	
+	public boolean getLoggedInStatus() {
+		return loggedIn;
+	}
+	
+	public int getClientID() {
+		return myClientsID;
+	}
+	
 	/**
 	 * Starts this server receiver.
 	 */
 	public void run() {
 		try {
-			while (true) {
+			while (running) {
 				String userInput = myClient.readLine(); // Matches CCCCC in ClientSender.java
-
-				if (userInput == null || userInput.equals("quit")) {
+				
+				switch (userInput) {
+				case "":
+				case "quit":
 					// Either end of stream reached, just give up, or user wants to quit
+					running = false;
+					break;
+				case "register":
+					//TODO
+				case "login":
+					// This is only received if a user isn't already logged in
+					String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
+					if (nicknameToIDMap.containsValue(nickname)) {
+						myClientsName = nickname;
+						loggedIn = true;
+					} else {
+						Message msg = new Message("Server", "User " + myClientsName + "logged in");
+						
+						Integer recipientID = myClientsID;
+						
+						BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in
+																									// ServerSender.java
+						recipientsQueue.offer(msg);
+					}
+					
+//					server.println(userInput); // Matches CCCCC in ServerReceiver
+//					userInput = user.readLine();
+//					server.println(userInput);
+//					if (userInput.equals("")) {
+//						System.out.println("User cannot be null. Try another command.");
+//					} else {
+//						userInput = user.readLine();
+//						server.println(userInput);
+//					}
+					break;
+				case "logout":
+					//TODO
+				case "previous":
+					//TODO
+				case "next":
+					//TODO
+				case "delete":
+					//TODO
+//					server.println(userInput); // Matches CCCCC in ServerReceiver
+					break;
+				case "send":
+					String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
+					String text = myClient.readLine();  // Matches EEEEE in ClientSender.java
+
+					if (text != null && nicknameToIDMap.get(recipient) != null) {
+						Message msg = new Message(myClientsName, text);
+						
+						Integer recipientID = nicknameToIDMap.get(recipient);
+						
+						BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in
+																									// ServerSender.java
+						if (recipientsQueue != null) {
+							recipientsQueue.offer(msg);
+						} else {
+							Report.error("Message for unexistent client " + recipient + ": " + text);
+						}
+					} else {
+						// No point in closing socket. Just give up.
+						return;
+					}
+					break;
+				default:
+					System.out.println("Command not recognised. This should never print, so there's a bug somewhere");
 					break;
 				}
 
-				String text = myClient.readLine(); // Matches DDDDD in ClientSender.java
-
-				if (text != null) {
-					Message msg = new Message(myClientsName, text);
-					BlockingQueue<Message> recipientsQueue = clientTable.getQueue(userInput); // Matches EEEEE in
-																								// ServerSender.java
-					if (recipientsQueue != null) {
-						recipientsQueue.offer(msg);
-					} else {
-						Report.error("Message for unexistent client " + userInput + ": " + text);
-					}
-				} else {
-					// No point in closing socket. Just give up.
-					return;
-				}
 			}
 		} catch (IOException e) {
 			Report.error("Something went wrong with the client " + myClientsName + " " + e.getMessage());

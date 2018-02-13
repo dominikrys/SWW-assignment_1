@@ -11,6 +11,7 @@ import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedHashMap;
 
 public class Server {
 
@@ -21,8 +22,11 @@ public class Server {
 
 		// This table will be shared by the server threads:
 		ClientTable clientTable = new ClientTable();
+		LinkedHashMap<String, Integer> nicknameToIdMap = new LinkedHashMap<String, Integer>();
 
 		ServerSocket serverSocket = null;
+		
+		int clientID = 0;
 
 		try {
 			serverSocket = new ServerSocket(Port.number);
@@ -31,6 +35,7 @@ public class Server {
 		}
 
 		try {
+			
 			// We loop for ever, as servers usually do.
 			while (true) {
 				// Listen to the socket, accepting connections from new clients:
@@ -39,21 +44,31 @@ public class Server {
 				// This is so that we can use readLine():
 				BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-				// We ask the client what its name is:
-				String clientName = fromClient.readLine(); // Matches BBBBB in Client
+				boolean loggedIn = false;
 
-				Report.behaviour(clientName + " connected");
-
+				// We alsk the client what its name is:
+//				String clientName = fromClient.readLine(); // Matches BBBBB in Client
+				Report.behaviour("Client " + clientID + " connected");
 				// We add the client to the table:
-				clientTable.add(clientName);
+				clientTable.add(clientID);
 
 				// We create and start a new thread to write to the client:
 				PrintStream toClient = new PrintStream(socket.getOutputStream());
-				ServerSender serverSender = new ServerSender(clientTable.getQueue(clientName), toClient);
+				ServerSender serverSender = new ServerSender(clientTable.getQueue(clientID), toClient);
 				serverSender.start();
 
 				// We create and start a new thread to read from the client:
-				(new ServerReceiver(clientName, fromClient, clientTable, serverSender)).start();
+				ServerReceiver serverReceiver = new ServerReceiver(clientID, fromClient, clientTable, serverSender, nicknameToIdMap);
+				serverReceiver.start();
+				
+				clientID++;
+				
+				while (loggedIn == false) {
+					if (serverReceiver.getLoggedInStatus == true) {
+						nicknameToIDMap.put(serverReceiver.getName(), serverReceiver.getId());
+						loggedIn = true;
+					}
+				}
 			}
 		} catch (IOException e) {
 			// Lazy approach:

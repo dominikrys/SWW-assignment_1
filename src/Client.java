@@ -1,15 +1,10 @@
 
 // Usage:
-//        java Client user-nickname server-hostname
+//        java Client server-hostname
 //
 // After initializing and opening appropriate sockets, we start two
 // client threads, one to send messages, and another one to get
 // messages.
-//
-// A limitation of our implementation is that there is no provision
-// for a client to end after we start it. However, we implemented
-// things so that pressing ctrl-c will cause the client to end
-// gracefully without causing the server to fail.
 //
 // Another limitation is that there is no provision to terminate when
 // the server dies.
@@ -27,20 +22,19 @@ class Client {
 	public static void main(String[] args) {
 
 		// Check correct usage:
-		if (args.length != 2) {
-			Report.errorAndGiveUp("Usage: java Client user-nickname server-hostname");
-		} else if (args[0].toLowerCase().equals("quit")) {
-			Report.errorAndGiveUp("Name of client can't be \"quit\"");
-		}
+		if (args.length != 1) {
+			Report.errorAndGiveUp("Usage: java Client server-hostname");
+		} 
 
 		// Initialize information:
-		String nickname = args[0];
-		String hostname = args[1];
+		String hostname = args[0];
 
 		// Open sockets:
 		PrintStream toServer = null;
 		BufferedReader fromServer = null;
 		Socket server = null;
+		
+		String nickname = null;
 
 		try {
 			server = new Socket(hostname, Port.number); // Matches AAAAA in Server.java
@@ -51,17 +45,27 @@ class Client {
 		} catch (IOException e) {
 			Report.errorAndGiveUp("The server doesn't seem to be running " + e.getMessage());
 		}
+		
+		boolean loggedIn = false;
 
 		// Tell the server what my nickname is:
-		toServer.println(nickname); // Matches BBBBB in Server.java
+//		toServer.println(nickname); // Matches BBBBB in Server.java
 
 		// Create two client threads of a diferent nature:
-		ClientSender sender = new ClientSender(nickname, toServer);
+		ClientSender sender = new ClientSender(toServer);
 		ClientReceiver receiver = new ClientReceiver(fromServer);
 
 		// Run them in parallel:
 		sender.start();
 		receiver.start();
+		
+		//TODO: This possibly needs to go into the try block?
+		while (loggedIn == false) {
+			if (receiver.getLoggedInStatus() == true) {
+				nickname = receiver.getNickname();
+				sender.setNickname(nickname);
+			}
+		}
 
 		// Wait for them to end and close sockets.
 		try {

@@ -1,0 +1,4 @@
+comments
+make sure to always check if output suddentlly cuts off
+solution.md
+disallow nicknames like "quit" "server" or ""
