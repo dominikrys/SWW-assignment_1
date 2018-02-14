@@ -140,6 +140,7 @@ public class ServerReceiver extends Thread {
 					if (text != null && nicknameToIDMap.get(recipient) != null) {
 						Message msg = new Message(myClientsName, text);
 
+						// See how many client IDs there are with of the same name but different ID to allow a a user to have multiple copies running
 						Integer recipientID = nicknameToIDMap.get(recipient);
 
 						BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in

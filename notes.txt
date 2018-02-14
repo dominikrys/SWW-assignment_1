@@ -13,3 +13,4 @@ try sendservermessage
 add nickname exclusions
 see if i can optimise quitting etc
 keep construcors consistent i.e. _value
+clean up directory
