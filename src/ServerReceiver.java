@@ -86,8 +86,9 @@ public class ServerReceiver extends Thread {
 			while (running) {
 				String userInput = myClient.readLine(); // Matches CCCCC in ClientSender.java
 
-				// In try block in case there's a nullpointer exception - case statements for strings don't allow checking for null, so this is necessary
-				
+				// In try block in case there's a nullpointer exception - case statements for
+				// strings don't allow checking for null, so this is necessary
+
 				try {
 					switch (userInput) {
 					case "quit":
@@ -113,26 +114,38 @@ public class ServerReceiver extends Thread {
 
 								// Assign the client's ID to an arraylist
 								ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
-								
+
 								// If statement to avoid nullpointexception
 								if (nicknameToIDMap.get(nickname) != null) {
 									extractedIDs = nicknameToIDMap.get(nickname);
 								}
 								extractedIDs.add(myClientsID);
 								nicknameToIDMap.put(nickname, extractedIDs);
-								
+
 								loggedIn = true;
 								System.out.println("Client " + myClientsID + " successfully logged in as " + nickname);
+							} else {
+								System.out.println(nickname + " isn't registered. Please register first.");
 							}
-							// else {
-							// sendServerMessage(nickname + " isn't registered. Please register first.");
-							// }
 						} else {
 							System.out.println("This client is already logged in to an account");
 						}
 						break;
 					case "logout":
-						// TODO
+						if (loggedIn == true) {
+							// Remove ID from list so it doesn't get stuff sent to it
+							ArrayList<Integer> extractedIDs = nicknameToIDMap.get(myClientsName);
+							extractedIDs.remove((Integer) myClientsID);
+							
+							// Store the IDs back with the removed clientID
+							nicknameToIDMap.put(myClientsName, extractedIDs);
+
+							loggedIn = false;
+							System.out.println("Client " + myClientsID + " logged out of account " + myClientsName);
+							myClientsName = null;
+						} else {
+							System.out.println("Client not logged in, so can't be logged out");
+						}
 					case "previous":
 						// TODO
 					case "next":
@@ -148,20 +161,23 @@ public class ServerReceiver extends Thread {
 						if (text != null) {
 							if (nicknameToIDMap.get(recipient) == null) {
 								System.out.println("Message " + text + " to unexistent recipient " + recipient);
-							}else {
+							} else {
 								Message msg = new Message(myClientsName, text);
 
 								// See how many client IDs there are with of the same name but different ID to
 								// allow a a user to have multiple copies running
 								ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
 								extractedIDs = nicknameToIDMap.get(recipient);
-								
+
 								for (Integer recipientID : extractedIDs) {
-									BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in ServerSender.java
-									
+									BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches
+																												// EEEEE
+																												// in
+																												// ServerSender.java
+
 									if (recipientsQueue != null) {
 										recipientsQueue.offer(msg);
-									} 
+									}
 								}
 							}
 						} else {
@@ -170,7 +186,8 @@ public class ServerReceiver extends Thread {
 						}
 						break;
 					default:
-						System.out.println("Command not recognised. This should never print, so there's a bug somewhere");
+						System.out
+								.println("Command not recognised. This should never print, so there's a bug somewhere");
 						break;
 					}
 				} catch (NullPointerException e) {

@@ -10,9 +10,12 @@ remove all redundant imports and variables and methods
 solution md server checking if stuff logged in
 maybe add messaged to send back to user
 try sendservermessage when stuff isn't working and explain in solution md
-add nickname exclusions
+add nickname exclusions - blanks etc, possibly excluse capitals
 see if i can optimise quitting etc
 keep construcors consistent i.e. _value
 clean up directory
 make hashmaps generic i.e. map = hashmap
 general testing
+necessary to initialize arraylist if it's being set to an existing one??
+add extra methods to better handle repeated tasks
+switch null mention jls
