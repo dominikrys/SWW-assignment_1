@@ -18,9 +18,10 @@ public class ServerReceiver extends Thread {
 	private ServerSender companion;
 	private boolean running;
 	private ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
+	private ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
+	private ConcurrentHashMap<String, Message> currentMessageMap = new ConcurrentHashMap<String, Message>();
 	private boolean loggedIn;
 	private ConcurrentLinkedQueue<String> registeredUsers;
-	private String newRegisteredUser;
 
 	/**
 	 * Constructs a new server receiver.
@@ -36,7 +37,8 @@ public class ServerReceiver extends Thread {
 	 */
 	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s,
 			ConcurrentHashMap<String, ArrayList<Integer>> _nicknameToIDMap,
-			ConcurrentLinkedQueue<String> _registeredUsers) {
+			ConcurrentLinkedQueue<String> _registeredUsers, ConcurrentHashMap<String, ArrayList<Message>> _messageStore,
+			ConcurrentHashMap<String, Message> _currentMessageMap) {
 		myClientsID = id;
 		myClient = c;
 		clientTable = t;
@@ -45,27 +47,8 @@ public class ServerReceiver extends Thread {
 		loggedIn = false;
 		running = true;
 		registeredUsers = _registeredUsers;
-		newRegisteredUser = null;
-	}
-
-	public String getClientName() {
-		return myClientsName;
-	}
-
-	public boolean getLoggedInStatus() {
-		return loggedIn;
-	}
-
-	public int getClientID() {
-		return myClientsID;
-	}
-
-	public String newUserAdded() {
-		return newRegisteredUser;
-	}
-
-	public void newUserRegistered() {
-		newRegisteredUser = null;
+		messageStore = _messageStore;
+		currentMessageMap = _currentMessageMap;
 	}
 
 	private void sendServerMessage(String message) {
@@ -136,7 +119,7 @@ public class ServerReceiver extends Thread {
 							// Remove ID from list so it doesn't get stuff sent to it
 							ArrayList<Integer> extractedIDs = nicknameToIDMap.get(myClientsName);
 							extractedIDs.remove((Integer) myClientsID);
-							
+
 							// Store the IDs back with the removed clientID
 							nicknameToIDMap.put(myClientsName, extractedIDs);
 
@@ -179,6 +162,15 @@ public class ServerReceiver extends Thread {
 										recipientsQueue.offer(msg);
 									}
 								}
+								
+								// Store message in server
+								ArrayList<Message> extractedMessages;
+								extractedMessages = messageStore.get(recipient);
+								if (extractedMessages.size() == 0) {
+									extractedMessages = new ArrayList<Message>()
+								}
+								extractedMessages.add(msg);
+								messageStore.put(recipient, extractedMessages);
 							}
 						} else {
 							// No point in closing socket. Just give up.

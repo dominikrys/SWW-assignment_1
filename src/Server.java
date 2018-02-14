@@ -32,6 +32,12 @@ public class Server {
 		
 		// List of all registered users
 		ConcurrentLinkedQueue<String> registeredUsers = new ConcurrentLinkedQueue<String>();
+		
+		// ConcurrentHashMap for storing all messages
+		ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
+		
+		// ConcurrentHashMap for tracking which message is the "current" one
+		ConcurrentHashMap<String, Message> currentMessageMap = new ConcurrentHashMap<String, Message>();
 
 		ServerSocket serverSocket = null;
 		
@@ -65,7 +71,7 @@ public class Server {
 				serverSender.start();
 
 				// We create and start a new thread to read from the client:
-				ServerReceiver serverReceiver = new ServerReceiver(clientID, fromClient, clientTable, serverSender, nicknameToIDMap, registeredUsers);
+				ServerReceiver serverReceiver = new ServerReceiver(clientID, fromClient, clientTable, serverSender, nicknameToIDMap, registeredUsers, messageStore, currentMessageMap);
 				serverReceiver.start();
 				
 				clientID++;

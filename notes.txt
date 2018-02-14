@@ -1,7 +1,7 @@
 comments
 make sure to always check if output suddentlly cuts off
 solution.md
-disallow nicknames like "quit" "server" or ""
+disallow nicknames like "quit" "server" or "", possibly ignore cases?
 keep updating arraylists and queues in while loop of server
 make method for sending server messages
 handle commands at the bottom of serverreceiver
@@ -19,3 +19,7 @@ general testing
 necessary to initialize arraylist if it's being set to an existing one??
 add extra methods to better handle repeated tasks
 switch null mention jls
+added running flags to break the switch statements
+thought about messageStore storing hashmaps to tell which one is current but that would be too much effort to access, not worth it
+take last currentmessage is fone is being tracked down 
+hashmap to disallow duplicate names
