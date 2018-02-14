@@ -9,11 +9,9 @@ import java.net.SocketException;
 public class ClientReceiver extends Thread {
 
 	private BufferedReader server;
-	private boolean loggedIn;
 
 	ClientReceiver(BufferedReader server) {
 		this.server = server;
-		loggedIn = false;
 	}
 
 	/**
@@ -23,47 +21,19 @@ public class ClientReceiver extends Thread {
 		// Print to the user whatever we get from the server:
 		try {
 			while (true) {
-				String receivedMessage = server.readLine(); // Matches FFFFF in ServerSender.java
-				
-				// Extract sender in case it's the server
-				String firstWord = "Magic Word";
-				
-				// Check if it's a message from the server
-				String sender = receivedMessage.substring(5, 11);
-				
-				if (sender.equals("Server")) {
-					if (receivedMessage.substring(13, 18).equals("login") ) {
-						loggedIn = true;
-						nickname = receivedMessage.substring(18, receivedMessage.length());
-						receivedMessage = "Successfully logged in as " + nickname;
-					}
-					else if (receivedMessage.substring(13, 16).equals("reg") ) {
-						nickname = receivedMessage.substring(16, receivedMessage.length());
-						receivedMessage = "Registered users " + nickname;
-					}
-				}
+				String s = server.readLine(); // Matches FFFFF in ServerSender.java
 
-				// If null message, some kind of error occured
-				if (receivedMessage == null) {
+				if (s == null) {
 					throw new NullPointerException();
 				}
 
-				// Print the message
-				System.out.println(receivedMessage);
+				System.out.println(s);
 			}
 		} catch (SocketException e) { // Matches HHHHH in Client.java
 			Report.behaviour("Client receiver ending");
 		} catch (NullPointerException | IOException e) {
 			Report.errorAndGiveUp("Server seems to have died " + (e.getMessage() == null ? "" : e.getMessage()));
 		}
-	}
-	
-	public boolean getLoggedInStatus() {
-		return loggedIn;
-	}
-	
-	public String getNickname() {
-		return nickname;
 	}
 }
 

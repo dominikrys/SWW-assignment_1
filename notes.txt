@@ -4,3 +4,12 @@ solution.md
 disallow nicknames like "quit" "server" or ""
 keep updating arraylists and queues in while loop of server
 make method for sending server messages
+handle commands at the bottom of serverreceiver
+multiple clients
+remove all redundant imports and variables and methods
+solution md server checking if stuff logged in
+maybe add messaged to send back to user
+try sendservermessage
+add nickname exclusions
+see if i can optimise quitting etc
+keep construcors consistent i.e. _value

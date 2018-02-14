@@ -2,8 +2,6 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
@@ -17,9 +15,9 @@ public class ServerReceiver extends Thread {
 	private ClientTable clientTable;
 	private ServerSender companion;
 	private boolean running;
-	private ConcurrentHashMap<String, Integer> nicknameToIDMap = new ConcurrentHashMap<String, Integer>();
+	private LinkedHashMap<String, Integer> nicknameToIDMap = new LinkedHashMap<String, Integer>();
 	private boolean loggedIn;
-	private ConcurrentLinkedQueue<String> registeredUsers;
+	private ArrayList<String> registeredUsers;
 	private String newRegisteredUser;
 
 	/**
@@ -35,7 +33,7 @@ public class ServerReceiver extends Thread {
 	 *            the corresponding sender for this receiver
 	 */
 	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s,
-			ConcurrentHashMap<String, Integer> _nicknameToIDMap, ConcurrentLinkedQueue<String> _registeredUsers) {
+			LinkedHashMap<String, Integer> _nicknameToIDMap, ArrayList<String> _registeredUsers) {
 		myClientsID = id;
 		myClient = c;
 		clientTable = t;
@@ -67,7 +65,7 @@ public class ServerReceiver extends Thread {
 		newRegisteredUser = null;
 	}
 	
-	public void updateTables(ConcurrentHashMap<String, Integer> _nicknameToIDMap, ConcurrentLinkedQueue<String> _registeredUsers) {
+	public void updateTables(LinkedHashMap<String, Integer> _nicknameToIDMap, ArrayList<String> _registeredUsers) {
 		nicknameToIDMap = _nicknameToIDMap;
 		registeredUsers = _registeredUsers;
 	}
@@ -97,30 +95,29 @@ public class ServerReceiver extends Thread {
 					running = false;
 					break;
 				case "register":
+					// This is only received if a user isn't logged in - could potentially be
+					// changed, explain in solution.md
 					String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
 
 					if (!registeredUsers.contains(nickname)) {
-						registeredUsers.add(nickname);
-						System.out.println("User " + nickname + " registered.");
+						newRegisteredUser = nickname;
+						System.out.println(nickname);
+						sendServerMessage("reg" + nickname);
 					} else {
-						System.out.println(nickname + " is already registered.");
+						sendServerMessage(nickname + " is already registered. You can log in.");
 					}
 					break;
 				case "login":
+					// This is only received if a user isn't already logged in
 					nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
 
-					if (loggedIn == false) {
-						if (registeredUsers.contains(nickname)) {
-							myClientsName = nickname;
-							nicknameToIDMap.put(nickname, myClientsID);
-							loggedIn = true;
-							System.out.println("Successfully logged in as " + nickname);
-						}
-//						else {
-//							sendServerMessage(nickname + " isn't registered. Please register first.");
-//						}
+					if (registeredUsers.contains(nickname)) {
+						myClientsName = nickname;
+						loggedIn = true;
+
+						sendServerMessage("login" + myClientsName);
 					} else {
-						System.out.println("This client is already logged in to an account");
+						sendServerMessage(nickname + " isn't registered. Please register first.");
 					}
 					break;
 				case "logout":

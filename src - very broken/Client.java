@@ -58,6 +58,14 @@ class Client {
 		// Run them in parallel:
 		sender.start();
 		receiver.start();
+		
+		//TODO: This possibly needs to go into the try block?
+		while (loggedIn == false) {
+			if (receiver.getLoggedInStatus() == true) {
+				nickname = receiver.getNickname();
+				sender.setNickname(nickname);
+			}
+		}
 
 		// Wait for them to end and close sockets.
 		try {

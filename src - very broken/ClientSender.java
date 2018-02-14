@@ -22,6 +22,7 @@ public class ClientSender extends Thread {
 	}
 
 	public void setNickname(String _nickname) {
+		nickname = _nickname;
 		loggedIn = true;
 	}
 
@@ -48,28 +49,42 @@ public class ClientSender extends Thread {
 					break;
 				case "register":
 				case "login":
-					server.println(userInput); // Matches CCCCC in ServerReceiver
-					String username = user.readLine();
-					server.println(username); // Matches FFFFF in ServerReceiver
-					// if (username.equals("")) {
-					// System.out.println("User cannot be null. Try another command.");
-					// }
+					if (loggedIn == true) {
+						System.out
+								.println("Can't use the command " + userInput + " as there's a user already logged in");
+					} else {
+						server.println(userInput); // Matches CCCCC in ServerReceiver
+						String username = user.readLine();
+						server.println(username); // Matches FFFFF in ServerReceiver
+						// if (username.equals("")) {
+						// System.out.println("User cannot be null. Try another command.");
+						// }
+						break;
+					}
 					break;
 				case "logout":
 				case "previous":
 				case "next":
 				case "delete":
-					server.println(userInput); // Matches CCCCC in ServerReceiver
+					if (loggedIn == true) {
+						server.println(userInput); // Matches CCCCC in ServerReceiver
+					} else {
+						System.out.println("No user logged in, thereforce can't run the command " + userInput);
+					}
 					break;
 				case "send":
-					server.println(userInput); // Matches CCCCC in ServerReceiver
-					String recipient = user.readLine();
-					server.println(recipient); // Matches DDDDD in ClientSender.java
-					if (recipient.equals("")) {
-						System.out.println("Recipient cannot be null");
+					if (loggedIn == true) {
+						server.println(userInput); // Matches CCCCC in ServerReceiver
+						String recipient = user.readLine();
+						server.println(recipient); // Matches DDDDD in ClientSender.java
+						if (recipient.equals("")) {
+							System.out.println("Recipient cannot be null");
+						} else {
+							String text = user.readLine();
+							server.println(text); // Matches EEEEE in ClientSender.java
+						}
 					} else {
-						String text = user.readLine();
-						server.println(text); // Matches EEEEE in ClientSender.java
+						System.out.println("No user logged in, therefore can't run the command " + userInput);
 					}
 					break;
 				default:

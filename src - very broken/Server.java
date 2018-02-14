@@ -13,9 +13,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class Server {
 
@@ -28,10 +25,10 @@ public class Server {
 		ClientTable clientTable = new ClientTable();
 		
 		// Map of currently logged clients and their usernames
-		ConcurrentHashMap<String, Integer> nicknameToIDMap = new ConcurrentHashMap<String, Integer>();
+		LinkedHashMap<String, Integer> nicknameToIDMap = new LinkedHashMap<String, Integer>();
 		
 		// List of all registered users
-		ConcurrentLinkedQueue<String> registeredUsers = new ConcurrentLinkedQueue<String>();
+		ArrayList<String> registeredUsers = new ArrayList<String>();
 
 		ServerSocket serverSocket = null;
 		
@@ -55,6 +52,8 @@ public class Server {
 
 				boolean loggedIn = false;
 
+				// We alsk the client what its name is:
+//				String clientName = fromClient.readLine(); // Matches BBBBB in Client
 				Report.behaviour("Client " + clientID + " connected");
 				// We add the client to the table:
 				clientTable.add(clientID);
@@ -70,6 +69,19 @@ public class Server {
 				
 				clientID++;
 				
+				while (loggedIn == false) {
+					System.out.println(registeredUsers.get(0));
+					if (serverReceiver.newUserAdded() != null) {
+						registeredUsers.add(serverReceiver.newUserAdded());
+						serverReceiver.newUserRegistered();
+						// Update receiver lists
+						serverReceiver.updateTables(nicknameToIDMap, registeredUsers);
+					}
+					else if (serverReceiver.getLoggedInStatus() == true) {
+						nicknameToIDMap.put(serverReceiver.getClientName(), serverReceiver.getClientID());
+						loggedIn = true;
+					}
+				}
 			}
 		} catch (IOException e) {
 			// Lazy approach:
