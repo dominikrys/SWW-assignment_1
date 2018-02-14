@@ -29,12 +29,17 @@ public class ClientReceiver extends Thread {
 				String firstWord = "Magic Word";
 				
 				// Check if it's a message from the server
-				String sender = receivedMessage.substring(0, firstWord.indexOf(" "));
+				String sender = receivedMessage.substring(5, 11);
 				
-				if (sender.toLowerCase().equals("server")) {
-					if (receivedMessage.toLowerCase().contains("logged in".toLowerCase())) {
+				if (sender.equals("Server")) {
+					if (receivedMessage.substring(13, 18).equals("login") ) {
 						loggedIn = true;
-						
+						nickname = receivedMessage.substring(18, receivedMessage.length());
+						receivedMessage = "Successfully logged in as " + nickname;
+					}
+					else if (receivedMessage.substring(13, 16).equals("reg") ) {
+						nickname = receivedMessage.substring(16, receivedMessage.length());
+						receivedMessage = "Registered users " + nickname;
 					}
 				}
 
@@ -57,7 +62,9 @@ public class ClientReceiver extends Thread {
 		return loggedIn;
 	}
 	
-	public String 
+	public String getNickname() {
+		return nickname;
+	}
 }
 
 /*

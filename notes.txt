@@ -2,3 +2,5 @@ comments
 make sure to always check if output suddentlly cuts off
 solution.md
 disallow nicknames like "quit" "server" or ""
+keep updating arraylists and queues in while loop of server
+make method for sending server messages

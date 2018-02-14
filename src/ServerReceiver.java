@@ -2,6 +2,7 @@
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
 // Gets messages from client and puts them in a queue, for another
@@ -16,6 +17,8 @@ public class ServerReceiver extends Thread {
 	private boolean running;
 	private LinkedHashMap<String, Integer> nicknameToIdMap = new LinkedHashMap<String, Integer>();
 	private boolean loggedIn;
+	ArrayList<String> registeredUsers;
+	String newRegisteredUser;
 
 	/**
 	 * Constructs a new server receiver.
@@ -29,7 +32,8 @@ public class ServerReceiver extends Thread {
 	 * @param s
 	 *            the corresponding sender for this receiver
 	 */
-	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s, LinkedHashMap<Integer, String> _nicknameToIDMap) {
+	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s,
+			LinkedHashMap<Integer, String> _nicknameToIDMap, ArrayList<String> _registeredUsers) {
 		myClientsId = id;
 		myClient = c;
 		clientTable = t;
@@ -37,20 +41,40 @@ public class ServerReceiver extends Thread {
 		nicknameToIdMap = _nicknameToIdMap;
 		loggedIn = false;
 		running = true;
+		registeredUsers = _registeredUsers;
+		newRegisteredUser = null;
 	}
 
 	public String getName() {
 		return myClientsName;
 	}
-	
+
 	public boolean getLoggedInStatus() {
 		return loggedIn;
 	}
-	
+
 	public int getClientID() {
 		return myClientsID;
 	}
 	
+	public String newUserAdded() {
+		return newRegisteredUser;
+	}
+	
+	public void newUserRegistered() {
+		newRegisteredUser = null;
+	}
+	
+	private void sendServerMessage(String message) {
+		Message msg = new Message("Server", message);
+
+		Integer recipientID = myClientsID;
+
+		BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in
+																					// ServerSender.java
+		recipientsQueue.offer(msg);
+	}
+
 	/**
 	 * Starts this server receiver.
 	 */
@@ -58,7 +82,7 @@ public class ServerReceiver extends Thread {
 		try {
 			while (running) {
 				String userInput = myClient.readLine(); // Matches CCCCC in ClientSender.java
-				
+
 				switch (userInput) {
 				case "":
 				case "quit":
@@ -66,52 +90,48 @@ public class ServerReceiver extends Thread {
 					running = false;
 					break;
 				case "register":
-					//TODO
+					// This is only received if a user isn't logged in - could potentially be
+					// changed, explain in solution.md
+					String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
+
+					if (!registeredUsers.contains(username)) {
+						newRegisteredUser = username;
+						sendServerMessage("reg" + myclientsname);
+					} else {
+						sendServerMessage(nickname + " is already registered. You can log in.");
+					}
 				case "login":
 					// This is only received if a user isn't already logged in
 					String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
-					if (nicknameToIDMap.containsValue(nickname)) {
+
+					if (registeredUsers.contains(username)) {
 						myClientsName = nickname;
 						loggedIn = true;
+
+						sendServerMessage("login" + myclientsname);
 					} else {
-						Message msg = new Message("Server", "User " + myClientsName + "logged in");
-						
-						Integer recipientID = myClientsID;
-						
-						BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in
-																									// ServerSender.java
-						recipientsQueue.offer(msg);
+						sendServerMessage(nickname + " isn't registered. Please register first.");
 					}
-					
-//					server.println(userInput); // Matches CCCCC in ServerReceiver
-//					userInput = user.readLine();
-//					server.println(userInput);
-//					if (userInput.equals("")) {
-//						System.out.println("User cannot be null. Try another command.");
-//					} else {
-//						userInput = user.readLine();
-//						server.println(userInput);
-//					}
 					break;
 				case "logout":
-					//TODO
+					// TODO
 				case "previous":
-					//TODO
+					// TODO
 				case "next":
-					//TODO
+					// TODO
 				case "delete":
-					//TODO
-//					server.println(userInput); // Matches CCCCC in ServerReceiver
+					// TODO
+					// server.println(userInput); // Matches CCCCC in ServerReceiver
 					break;
 				case "send":
 					String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
-					String text = myClient.readLine();  // Matches EEEEE in ClientSender.java
+					String text = myClient.readLine(); // Matches EEEEE in ClientSender.java
 
 					if (text != null && nicknameToIDMap.get(recipient) != null) {
 						Message msg = new Message(myClientsName, text);
-						
+
 						Integer recipientID = nicknameToIDMap.get(recipient);
-						
+
 						BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in
 																									// ServerSender.java
 						if (recipientsQueue != null) {

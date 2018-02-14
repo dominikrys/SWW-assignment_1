@@ -12,6 +12,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedHashMap;
+import java.util.ArrayList;
 
 public class Server {
 
@@ -22,7 +23,12 @@ public class Server {
 
 		// This table will be shared by the server threads:
 		ClientTable clientTable = new ClientTable();
+		
+		// Map of currently logged clients and their usernames
 		LinkedHashMap<String, Integer> nicknameToIdMap = new LinkedHashMap<String, Integer>();
+		
+		// List of all registered users
+		ArrayList<String> registeredUsers = new ArrayList<String>();
 
 		ServerSocket serverSocket = null;
 		
@@ -58,13 +64,17 @@ public class Server {
 				serverSender.start();
 
 				// We create and start a new thread to read from the client:
-				ServerReceiver serverReceiver = new ServerReceiver(clientID, fromClient, clientTable, serverSender, nicknameToIdMap);
+				ServerReceiver serverReceiver = new ServerReceiver(clientID, fromClient, clientTable, serverSender, nicknameToIdMap, registeredUsers);
 				serverReceiver.start();
 				
 				clientID++;
 				
 				while (loggedIn == false) {
-					if (serverReceiver.getLoggedInStatus == true) {
+					if (serverReceiver.newUserAdded() != null) {
+						registeredUsers.add(serverReceiver.newUserAdded());
+						serverReceiver.newUserRegistered;
+					}
+					else if (serverReceiver.getLoggedInStatus == true) {
 						nicknameToIDMap.put(serverReceiver.getName(), serverReceiver.getId());
 						loggedIn = true;
 					}
