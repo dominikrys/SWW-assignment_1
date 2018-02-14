@@ -28,14 +28,14 @@ public class Server {
 		ClientTable clientTable = new ClientTable();
 		
 		// Map of currently logged clients and their usernames
-		ConcurrentHashMap<String, Integer> nicknameToIDMap = new ConcurrentHashMap<String, Integer>();
+		ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
 		
 		// List of all registered users
 		ConcurrentLinkedQueue<String> registeredUsers = new ConcurrentLinkedQueue<String>();
 
 		ServerSocket serverSocket = null;
 		
-		int clientID = 0;
+		int clientID = 1;
 
 		try {
 			serverSocket = new ServerSocket(Port.number);

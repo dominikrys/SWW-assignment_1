@@ -17,7 +17,7 @@ public class ServerReceiver extends Thread {
 	private ClientTable clientTable;
 	private ServerSender companion;
 	private boolean running;
-	private ConcurrentHashMap<String, Integer> nicknameToIDMap = new ConcurrentHashMap<String, Integer>();
+	private ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
 	private boolean loggedIn;
 	private ConcurrentLinkedQueue<String> registeredUsers;
 	private String newRegisteredUser;
@@ -35,7 +35,8 @@ public class ServerReceiver extends Thread {
 	 *            the corresponding sender for this receiver
 	 */
 	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s,
-			ConcurrentHashMap<String, Integer> _nicknameToIDMap, ConcurrentLinkedQueue<String> _registeredUsers) {
+			ConcurrentHashMap<String, ArrayList<Integer>> _nicknameToIDMap,
+			ConcurrentLinkedQueue<String> _registeredUsers) {
 		myClientsID = id;
 		myClient = c;
 		clientTable = t;
@@ -58,20 +59,15 @@ public class ServerReceiver extends Thread {
 	public int getClientID() {
 		return myClientsID;
 	}
-	
+
 	public String newUserAdded() {
 		return newRegisteredUser;
 	}
-	
+
 	public void newUserRegistered() {
 		newRegisteredUser = null;
 	}
-	
-	public void updateTables(ConcurrentHashMap<String, Integer> _nicknameToIDMap, ConcurrentLinkedQueue<String> _registeredUsers) {
-		nicknameToIDMap = _nicknameToIDMap;
-		registeredUsers = _registeredUsers;
-	}
-	
+
 	private void sendServerMessage(String message) {
 		Message msg = new Message("Server", message);
 
@@ -112,13 +108,23 @@ public class ServerReceiver extends Thread {
 					if (loggedIn == false) {
 						if (registeredUsers.contains(nickname)) {
 							myClientsName = nickname;
-							nicknameToIDMap.put(nickname, myClientsID);
+
+							// Assign the client's ID to an arraylist
+							ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
+							
+							// If statement to avoid nullpointexception
+							if (nicknameToIDMap.get(nickname) != null) {
+								extractedIDs = nicknameToIDMap.get(nickname);
+							}
+							extractedIDs.add(myClientsID);
+							nicknameToIDMap.put(nickname, extractedIDs);
+							
 							loggedIn = true;
-							System.out.println("Successfully logged in as " + nickname);
+							System.out.println("Client " + myClientsID + " successfully logged in as " + nickname);
 						}
-//						else {
-//							sendServerMessage(nickname + " isn't registered. Please register first.");
-//						}
+						// else {
+						// sendServerMessage(nickname + " isn't registered. Please register first.");
+						// }
 					} else {
 						System.out.println("This client is already logged in to an account");
 					}
@@ -137,18 +143,24 @@ public class ServerReceiver extends Thread {
 					String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
 					String text = myClient.readLine(); // Matches EEEEE in ClientSender.java
 
-					if (text != null && nicknameToIDMap.get(recipient) != null) {
-						Message msg = new Message(myClientsName, text);
+					if (text != null) {
+						if (nicknameToIDMap.get(recipient) == null) {
+							System.out.println("Message " + text + "to unexistent recipient " + recipient);
+						}else {
+							Message msg = new Message(myClientsName, text);
 
-						// See how many client IDs there are with of the same name but different ID to allow a a user to have multiple copies running
-						Integer recipientID = nicknameToIDMap.get(recipient);
-
-						BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in
-																									// ServerSender.java
-						if (recipientsQueue != null) {
-							recipientsQueue.offer(msg);
-						} else {
-							Report.error("Message for unexistent client " + recipient + ": " + text);
+							// See how many client IDs there are with of the same name but different ID to
+							// allow a a user to have multiple copies running
+							ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
+							extractedIDs = nicknameToIDMap.get(recipient);
+							
+							for (Integer recipientID : extractedIDs) {
+								BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in ServerSender.java
+								
+								if (recipientsQueue != null) {
+									recipientsQueue.offer(msg);
+								} 
+							}
 						}
 					} else {
 						// No point in closing socket. Just give up.
@@ -169,6 +181,6 @@ public class ServerReceiver extends Thread {
 
 		Report.behaviour("Server receiver ending");
 		companion.interrupt();
-//		clientTable.remove(myClientsName);
+		// clientTable.remove(myClientsName);
 	}
 }

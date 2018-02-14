@@ -9,8 +9,10 @@ multiple clients
 remove all redundant imports and variables and methods
 solution md server checking if stuff logged in
 maybe add messaged to send back to user
-try sendservermessage
+try sendservermessage when stuff isn't working and explain in solution md
 add nickname exclusions
 see if i can optimise quitting etc
 keep construcors consistent i.e. _value
 clean up directory
+make hashmaps generic i.e. map = hashmap
+general testing
