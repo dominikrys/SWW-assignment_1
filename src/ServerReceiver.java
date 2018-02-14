@@ -86,92 +86,96 @@ public class ServerReceiver extends Thread {
 			while (running) {
 				String userInput = myClient.readLine(); // Matches CCCCC in ClientSender.java
 
-				switch (userInput) {
-				case "":
-				case "quit":
-					// Either end of stream reached, just give up, or user wants to quit
-					running = false;
-					break;
-				case "register":
-					String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
+				// In try block in case there's a nullpointer exception - case statements for strings don't allow checking for null, so this is necessary
+				
+				try {
+					switch (userInput) {
+					case "quit":
+						// Either end of stream reached, just give up, or user wants to quit
+						running = false;
+						break;
+					case "register":
+						String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
 
-					if (!registeredUsers.contains(nickname)) {
-						registeredUsers.add(nickname);
-						System.out.println("User " + nickname + " registered.");
-					} else {
-						System.out.println(nickname + " is already registered.");
-					}
-					break;
-				case "login":
-					nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
-
-					if (loggedIn == false) {
-						if (registeredUsers.contains(nickname)) {
-							myClientsName = nickname;
-
-							// Assign the client's ID to an arraylist
-							ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
-							
-							// If statement to avoid nullpointexception
-							if (nicknameToIDMap.get(nickname) != null) {
-								extractedIDs = nicknameToIDMap.get(nickname);
-							}
-							extractedIDs.add(myClientsID);
-							nicknameToIDMap.put(nickname, extractedIDs);
-							
-							loggedIn = true;
-							System.out.println("Client " + myClientsID + " successfully logged in as " + nickname);
+						if (!registeredUsers.contains(nickname)) {
+							registeredUsers.add(nickname);
+							System.out.println("User " + nickname + " registered.");
+						} else {
+							System.out.println(nickname + " is already registered.");
 						}
-						// else {
-						// sendServerMessage(nickname + " isn't registered. Please register first.");
-						// }
-					} else {
-						System.out.println("This client is already logged in to an account");
-					}
-					break;
-				case "logout":
-					// TODO
-				case "previous":
-					// TODO
-				case "next":
-					// TODO
-				case "delete":
-					// TODO
-					// server.println(userInput); // Matches CCCCC in ServerReceiver
-					break;
-				case "send":
-					String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
-					String text = myClient.readLine(); // Matches EEEEE in ClientSender.java
+						break;
+					case "login":
+						nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
 
-					if (text != null) {
-						if (nicknameToIDMap.get(recipient) == null) {
-							System.out.println("Message " + text + "to unexistent recipient " + recipient);
-						}else {
-							Message msg = new Message(myClientsName, text);
+						if (loggedIn == false) {
+							if (registeredUsers.contains(nickname)) {
+								myClientsName = nickname;
 
-							// See how many client IDs there are with of the same name but different ID to
-							// allow a a user to have multiple copies running
-							ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
-							extractedIDs = nicknameToIDMap.get(recipient);
-							
-							for (Integer recipientID : extractedIDs) {
-								BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in ServerSender.java
+								// Assign the client's ID to an arraylist
+								ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
 								
-								if (recipientsQueue != null) {
-									recipientsQueue.offer(msg);
-								} 
+								// If statement to avoid nullpointexception
+								if (nicknameToIDMap.get(nickname) != null) {
+									extractedIDs = nicknameToIDMap.get(nickname);
+								}
+								extractedIDs.add(myClientsID);
+								nicknameToIDMap.put(nickname, extractedIDs);
+								
+								loggedIn = true;
+								System.out.println("Client " + myClientsID + " successfully logged in as " + nickname);
 							}
+							// else {
+							// sendServerMessage(nickname + " isn't registered. Please register first.");
+							// }
+						} else {
+							System.out.println("This client is already logged in to an account");
 						}
-					} else {
-						// No point in closing socket. Just give up.
-						return;
-					}
-					break;
-				default:
-					System.out.println("Command not recognised. This should never print, so there's a bug somewhere");
-					break;
-				}
+						break;
+					case "logout":
+						// TODO
+					case "previous":
+						// TODO
+					case "next":
+						// TODO
+					case "delete":
+						// TODO
+						// server.println(userInput); // Matches CCCCC in ServerReceiver
+						break;
+					case "send":
+						String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
+						String text = myClient.readLine(); // Matches EEEEE in ClientSender.java
 
+						if (text != null) {
+							if (nicknameToIDMap.get(recipient) == null) {
+								System.out.println("Message " + text + " to unexistent recipient " + recipient);
+							}else {
+								Message msg = new Message(myClientsName, text);
+
+								// See how many client IDs there are with of the same name but different ID to
+								// allow a a user to have multiple copies running
+								ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
+								extractedIDs = nicknameToIDMap.get(recipient);
+								
+								for (Integer recipientID : extractedIDs) {
+									BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in ServerSender.java
+									
+									if (recipientsQueue != null) {
+										recipientsQueue.offer(msg);
+									} 
+								}
+							}
+						} else {
+							// No point in closing socket. Just give up.
+							return;
+						}
+						break;
+					default:
+						System.out.println("Command not recognised. This should never print, so there's a bug somewhere");
+						break;
+					}
+				} catch (NullPointerException e) {
+					running = false;
+				}
 			}
 		} catch (IOException e) {
 			Report.error("Something went wrong with the client " + myClientsName + " " + e.getMessage());
