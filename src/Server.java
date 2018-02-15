@@ -26,21 +26,21 @@ public class Server {
 
 		// This table will be shared by the server threads:
 		ClientTable clientTable = new ClientTable();
-		
+
 		// Map of currently logged clients and their usernames
 		ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
-		
+
 		// List of all registered users
 		ConcurrentLinkedQueue<String> registeredUsers = new ConcurrentLinkedQueue<String>();
-		
+
 		// ConcurrentHashMap for storing all messages
 		ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
-		
+
 		// ConcurrentHashMap for tracking which message is the "current" one
 		ConcurrentHashMap<String, Message> currentMessageMap = new ConcurrentHashMap<String, Message>();
 
 		ServerSocket serverSocket = null;
-		
+
 		int clientID = 1;
 
 		try {
@@ -50,7 +50,7 @@ public class Server {
 		}
 
 		try {
-			
+
 			// We loop for ever, as servers usually do.
 			while (true) {
 				// Listen to the socket, accepting connections from new clients:
@@ -71,11 +71,12 @@ public class Server {
 				serverSender.start();
 
 				// We create and start a new thread to read from the client:
-				ServerReceiver serverReceiver = new ServerReceiver(clientID, fromClient, clientTable, serverSender, nicknameToIDMap, registeredUsers, messageStore, currentMessageMap);
+				ServerReceiver serverReceiver = new ServerReceiver(clientID, fromClient, clientTable, serverSender,
+						nicknameToIDMap, registeredUsers, messageStore, currentMessageMap);
 				serverReceiver.start();
-				
+
 				clientID++;
-				
+
 			}
 		} catch (IOException e) {
 			// Lazy approach:

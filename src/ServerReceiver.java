@@ -130,12 +130,14 @@ public class ServerReceiver extends Thread {
 							System.out.println("Client not logged in, so can't be logged out");
 						}
 					case "previous":
-						// TODO
+
+						break;
 					case "next":
-						// TODO
+						
+						
+						break;
 					case "delete":
-						// TODO
-						// server.println(userInput); // Matches CCCCC in ServerReceiver
+						
 						break;
 					case "send":
 						String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
@@ -171,6 +173,9 @@ public class ServerReceiver extends Thread {
 								}
 								extractedMessages.add(msg);
 								messageStore.put(recipient, extractedMessages);
+								
+								//Set the message that has just been sent to be the current message
+								currentMessageMap.put(recipient, msg);
 							}
 						} else {
 							// No point in closing socket. Just give up.

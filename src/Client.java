@@ -24,7 +24,7 @@ class Client {
 		// Check correct usage:
 		if (args.length != 1) {
 			Report.errorAndGiveUp("Usage: java Client server-hostname");
-		} 
+		}
 
 		// Initialize information:
 		String hostname = args[0];
@@ -33,7 +33,7 @@ class Client {
 		PrintStream toServer = null;
 		BufferedReader fromServer = null;
 		Socket server = null;
-		
+
 		String nickname = null;
 
 		try {
@@ -45,11 +45,8 @@ class Client {
 		} catch (IOException e) {
 			Report.errorAndGiveUp("The server doesn't seem to be running " + e.getMessage());
 		}
-		
-		boolean loggedIn = false;
 
-		// Tell the server what my nickname is:
-//		toServer.println(nickname); // Matches BBBBB in Server.java
+		boolean loggedIn = false;
 
 		// Create two client threads of a diferent nature:
 		ClientSender sender = new ClientSender(toServer);
