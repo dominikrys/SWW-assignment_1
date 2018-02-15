@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 // thread to forward to the appropriate client.
 
 public class ServerReceiver extends Thread {
+	// Declare variables
 	private String myClientsName;
 	private int myClientsID;
 	private BufferedReader myClient;
@@ -23,56 +24,74 @@ public class ServerReceiver extends Thread {
 	private ConcurrentHashMap<String, Boolean> registeredUsers;
 
 	/**
-	 * Constructs a new server receiver.
+	 * The constructor
 	 * 
-	 * @param n
-	 *            the name of the client with which this server is communicating
-	 * @param c
-	 *            the reader with which this receiver will read data
-	 * @param t
-	 *            the table of known clients and connections
-	 * @param s
-	 *            the corresponding sender for this receiver
+	 * @param id
+	 *            The ID of the client
+	 * @param clientReader
+	 *            The BufferedReader which receives messages from ClientSender
+	 * @param table
+	 *            The ClientTable which stores message queues for all
+	 * @param serverSender
+	 *            The ServerSender that correspons to this object instance
+	 * @param _nicknameToIDMap
+	 *            ConcurrentHashMap that stores all client IDs associated with each
+	 *            nickname
+	 * @param _registeredUsers
+	 *            ConcurrentHashMap that stores all registered users and whether
+	 *            they're logged in or not
+	 * @param _messageStore
+	 *            ConcurrentHashMap that stores the messages of every client
+	 * @param _currentMessageMap
+	 *            ConcurrentHashMap that stores each nikname's "current" message
 	 */
-	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s,
+	public ServerReceiver(Integer id, BufferedReader clientReader, ClientTable table, ServerSender serverSender,
 			ConcurrentHashMap<String, ArrayList<Integer>> _nicknameToIDMap,
 			ConcurrentHashMap<String, Boolean> _registeredUsers,
 			ConcurrentHashMap<String, ArrayList<Message>> _messageStore,
 			ConcurrentHashMap<String, Integer> _currentMessageMap) {
 		myClientsID = id;
-		myClient = c;
-		clientTable = t;
-		companion = s;
+		myClient = clientReader;
+		clientTable = table;
+		companion = serverSender;
 		nicknameToIDMap = _nicknameToIDMap;
-		loggedIn = false;
-		running = true;
 		registeredUsers = _registeredUsers;
 		messageStore = _messageStore;
 		currentMessageMap = _currentMessageMap;
+		loggedIn = false;
+		running = true;
 	}
 
+	/**
+	 * Method for sending messages back to the client that has just sent something
+	 * to the server that would say they're from the server
+	 */
 	private void sendServerMessage(String message) {
+		// Construct a message to send to the client
 		Message msg = new Message("Server", message);
 
+		// Get the recipient's ID and add the constructed message to its message queue
 		Integer recipientID = myClientsID;
-
 		BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches EEEEE in
 																					// ServerSender.java
 		recipientsQueue.offer(msg);
 	}
 
+	/*
+	 * Method for sending a message that has already been sent before and is being
+	 * stored on the server
+	 */
 	private void sendExistingMessage(String recipient, Message inputMsg) {
-		// See how many client IDs there are with of the same name but different ID to
-		// allow a a user to have multiple copies running
+		// Get all client IDs currently logged in to the specified nickname
 		ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
 		extractedIDs = nicknameToIDMap.get(recipient);
 
+		// Send each client which is logged in as the recipient the messaage
 		for (Integer recipientID : extractedIDs) {
 			BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches
 																						// EEEEE
 																						// in
 																						// ServerSender.java
-
 			if (recipientsQueue != null) {
 				recipientsQueue.offer(inputMsg);
 			}
@@ -83,8 +102,11 @@ public class ServerReceiver extends Thread {
 	 * Starts this server receiver.
 	 */
 	public void run() {
+		// Try catch for IOExceptions which may occur if ClientSender dies
 		try {
+			// Loop receiving requests from ClientSender
 			while (running) {
+				// Get the initial command
 				String userInput = myClient.readLine(); // Matches CCCCC in ClientSender.java
 
 				// In try block in case there's a nullpointer exception - case statements for
@@ -92,15 +114,20 @@ public class ServerReceiver extends Thread {
 				try {
 					switch (userInput) {
 					case "quit":
-						// Either end of stream reached, just give up, or user wants to quit
+						// Either end of stream reached, just give up, or user wants to quit so quit the
+						// client
+						// Set the current client to logged out by setting the boolean to false
 						registeredUsers.put(myClientsName, false);
 						running = false;
 						break;
 					case "register":
+						// Get the nickname from ClientSender
 						String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
 
+						// Check if nickname is null in case the stream ended
 						if (nickname != null) {
 							if (loggedIn == false) {
+								// Check if user is registered
 								if (!registeredUsers.contains(nickname)) {
 									// Add nickname to registered users
 									registeredUsers.put(nickname, false);
@@ -113,13 +140,16 @@ public class ServerReceiver extends Thread {
 									// Set current message to -1
 									currentMessageMap.put(nickname, -1);
 
+									// Notify the server and user of behaviour
 									Report.behaviour("Client " + myClientsID + ": User " + nickname + " registered.");
 									sendServerMessage("User " + nickname + " registered.");
 								} else {
+									// Notify the server and user of behaviour
 									Report.error("Client " + myClientsID + ": " + nickname + " is already registered.");
 									sendServerMessage(nickname + " is already registered. You can log in.");
 								}
 							} else {
+								// Notify the server and user of behaviour
 								Report.error("Client " + myClientsID + ": tried to register when already logged in");
 								sendServerMessage("Can't register as as this client is logged in already");
 							}
@@ -129,15 +159,19 @@ public class ServerReceiver extends Thread {
 						}
 						break;
 					case "login":
+						// Read the nickname
 						nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
+
+						// Check if nickname is null in case the stream ended
 						if (nickname != null) {
 							if (loggedIn == false) {
+								// Check if the nickname is registered
 								if (registeredUsers.containsKey(nickname)) {
+									// Set this client's name to the entered name
 									myClientsName = nickname;
 
 									// Assign the client's ID to an arraylist
 									ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
-
 									// If statement to avoid nullpointexception
 									if (nicknameToIDMap.get(nickname) != null) {
 										extractedIDs = nicknameToIDMap.get(nickname);
@@ -145,6 +179,7 @@ public class ServerReceiver extends Thread {
 									extractedIDs.add(myClientsID);
 									nicknameToIDMap.put(nickname, extractedIDs);
 
+									// Set logged in to true and add the user to the registered users list
 									loggedIn = true;
 									registeredUsers.put(myClientsName, true);
 									Report.behaviour(
@@ -154,15 +189,14 @@ public class ServerReceiver extends Thread {
 									// Check if any messages have been sent to this client if they have logged in
 									// before but have received messages while being logged out
 									ArrayList<Message> extractedMessages = messageStore.get(myClientsName);
-
+									// Check if the current message isn't -1 (it gets set to this if it has only
+									// just been registered)
 									if (currentMessageMap.get(myClientsName) != -1) {
-										System.out.println(currentMessageMap.get(myClientsName));
-										System.out.println(extractedMessages.size());
+										// Check which the last message that was read was and print any that haven't
+										// been read by placing them in the message queue
 										if (currentMessageMap.get(myClientsName) != extractedMessages.size() - 1) {
-											System.out.println("!");
 											while (currentMessageMap.get(myClientsName) != extractedMessages.size()
 													- 1) {
-												System.out.println("x");
 												currentMessageMap.put(myClientsName,
 														currentMessageMap.get(myClientsName) + 1);
 
@@ -172,12 +206,14 @@ public class ServerReceiver extends Thread {
 										}
 									}
 								} else {
+									// Notify the server and user of any errors
 									Report.error("Client " + myClientsID + ": " + nickname
 											+ " isn't registered. Please register first.");
 									sendServerMessage(
 											nickname + " isn't registered. Please register the nickname first.");
 								}
 							} else {
+								// Notify the server and user of any errors
 								Report.error("Client " + myClientsID + " is already logged in to an account.");
 								sendServerMessage("This client is already logged in to account " + myClientsName);
 							}
@@ -189,19 +225,19 @@ public class ServerReceiver extends Thread {
 						break;
 					case "logout":
 						if (loggedIn == true) {
-							// Remove ID from list so it doesn't get stuff sent to it
+							// Remove client ID from the list of client IDs associated with the name this client is logged in to
 							ArrayList<Integer> extractedIDs = nicknameToIDMap.get(myClientsName);
 							extractedIDs.remove((Integer) myClientsID);
-
-							// Store the IDs back with the removed clientID
 							nicknameToIDMap.put(myClientsName, extractedIDs);
 
+							// Set logged in to false and notify the user and server about behaviour
 							loggedIn = false;
 							Report.behaviour("Client " + myClientsID + " logged out of account " + myClientsName);
 							sendServerMessage("Logged out of account " + myClientsName);
 							registeredUsers.put(myClientsName, false);
 							myClientsName = null;
 						} else {
+							// Notify the server and user of any errors
 							Report.error("Client " + myClientsID + " not logged in, so can't be logged out");
 							sendServerMessage("This client isn't logged in, so can't be logged out.");
 						}
