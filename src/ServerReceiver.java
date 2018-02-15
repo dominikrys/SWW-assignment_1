@@ -171,7 +171,7 @@ public class ServerReceiver extends Thread {
 
 						if (extractedMessages.size() == 0) {
 							System.out.println("Client " + myClientsID
-									+ " used command previous however no messages are stored for this client");
+									+ " used command previous however no messages are stored for this nickname");
 						} else if (currentMessageMap.get(myClientsName) == 0) {
 							System.out.println("Client " + myClientsID
 									+ " used command previous however the current message is already on the first message");
@@ -185,7 +185,22 @@ public class ServerReceiver extends Thread {
 						}
 						break;
 					case "next":
+						extractedMessages = messageStore.get(myClientsName);
 
+						if (extractedMessages.size() == 0) {
+							System.out.println("Client " + myClientsID
+									+ " used command next however no messages are stored for this nickname");
+						} else if (currentMessageMap.get(myClientsName) == extractedMessages.size() - 1) {
+							System.out.println("Client " + myClientsID
+									+ " used command next however the current message is already on the last message");
+						} else {
+							// Set current message to previous message
+							currentMessageMap.put(myClientsName, currentMessageMap.get(myClientsName) + 1);
+
+							// Print message
+							sendExistingMessage(myClientsName,
+									extractedMessages.get(currentMessageMap.get(myClientsName)));
+						}
 						break;
 					case "delete":
 
