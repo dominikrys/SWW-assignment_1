@@ -126,32 +126,39 @@ public class ServerReceiver extends Thread {
 
 						// Check if nickname is null in case the stream ended
 						if (nickname != null) {
-							if (loggedIn == false) {
-								// Check if user is registered
-								if (!registeredUsers.contains(nickname)) {
-									// Add nickname to registered users
-									registeredUsers.put(nickname, false);
+							// Disallow the name "Server" as some messages are sent from the server, and empty strings
+							if (!(nickname.equals("") || nickname.toLowerCase().equals("server"))) {
+								if (loggedIn == false) {
+									// Check if user is registered
+									if (!registeredUsers.containsKey(nickname)) {
+										// Add nickname to registered users
+										registeredUsers.put(nickname, false);
 
-									// Initialise a new arraylist in the messageStore so that it can be used by
-									// other parts of the program and won't throw nullpointer exceptions
-									ArrayList<Message> initialArrayList = new ArrayList<Message>();
-									messageStore.put(nickname, initialArrayList);
+										// Initialise a new arraylist in the messageStore so that it can be used by
+										// other parts of the program and won't throw nullpointer exceptions
+										ArrayList<Message> initialArrayList = new ArrayList<Message>();
+										messageStore.put(nickname, initialArrayList);
 
-									// Set current message to -1
-									currentMessageMap.put(nickname, -1);
+										// Set current message to -1
+										currentMessageMap.put(nickname, -1);
 
-									// Notify the server and user of behaviour
-									Report.behaviour("Client " + myClientsID + ": User " + nickname + " registered.");
-									sendServerMessage("User " + nickname + " registered.");
+										// Notify the server and user of behaviour
+										Report.behaviour("Client " + myClientsID + ": User " + nickname + " registered.");
+										sendServerMessage("User " + nickname + " registered.");
+									} else {
+										// Notify the server and user of error
+										Report.error("Client " + myClientsID + ": " + nickname + " is already registered.");
+										sendServerMessage(nickname + " is already registered. You can log in.");
+									}
 								} else {
-									// Notify the server and user of behaviour
-									Report.error("Client " + myClientsID + ": " + nickname + " is already registered.");
-									sendServerMessage(nickname + " is already registered. You can log in.");
+									// Notify the server and user of error
+									Report.error("Client " + myClientsID + ": tried to register when already logged in");
+									sendServerMessage("Can't register as as this client is logged in already");
 								}
 							} else {
-								// Notify the server and user of behaviour
-								Report.error("Client " + myClientsID + ": tried to register when already logged in");
-								sendServerMessage("Can't register as as this client is logged in already");
+								// Notify the server and user of error
+								Report.error("Client " + myClientsID + ": tried to register as a nickname that's not allowed");
+								sendServerMessage("The username \"Server\" and empty names are not allowed");
 							}
 						} else {
 							// No point in closing socket. Just give up.
