@@ -37,7 +37,7 @@ public class Server {
 		ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
 
 		// ConcurrentHashMap for tracking which message is the "current" one
-		ConcurrentHashMap<String, Message> currentMessageMap = new ConcurrentHashMap<String, Message>();
+		ConcurrentHashMap<String, Integer> currentMessageMap = new ConcurrentHashMap<String, Integer>();
 
 		ServerSocket serverSocket = null;
 

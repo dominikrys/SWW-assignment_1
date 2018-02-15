@@ -19,7 +19,7 @@ public class ServerReceiver extends Thread {
 	private boolean running;
 	private ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
 	private ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
-	private ConcurrentHashMap<String, Message> currentMessageMap = new ConcurrentHashMap<String, Message>();
+	private ConcurrentHashMap<String, Integer> currentMessageMap = new ConcurrentHashMap<String, Integer>();
 	private boolean loggedIn;
 	private ConcurrentLinkedQueue<String> registeredUsers;
 
@@ -38,7 +38,7 @@ public class ServerReceiver extends Thread {
 	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s,
 			ConcurrentHashMap<String, ArrayList<Integer>> _nicknameToIDMap,
 			ConcurrentLinkedQueue<String> _registeredUsers, ConcurrentHashMap<String, ArrayList<Message>> _messageStore,
-			ConcurrentHashMap<String, Message> _currentMessageMap) {
+			ConcurrentHashMap<String, Integer> _currentMessageMap) {
 		myClientsID = id;
 		myClient = c;
 		clientTable = t;
@@ -169,13 +169,13 @@ public class ServerReceiver extends Thread {
 								ArrayList<Message> extractedMessages;
 								extractedMessages = messageStore.get(recipient);
 								if (extractedMessages.size() == 0) {
-									extractedMessages = new ArrayList<Message>()
+									extractedMessages = new ArrayList<Message>();
 								}
 								extractedMessages.add(msg);
 								messageStore.put(recipient, extractedMessages);
 								
 								//Set the message that has just been sent to be the current message
-								currentMessageMap.put(recipient, msg);
+								currentMessageMap.put(recipient, extractedMessages.size() - 1);
 							}
 						} else {
 							// No point in closing socket. Just give up.

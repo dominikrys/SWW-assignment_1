@@ -23,3 +23,4 @@ added running flags to break the switch statements
 thought about messageStore storing hashmaps to tell which one is current but that would be too much effort to access, not worth it
 take last currentmessage is fone is being tracked down 
 hashmap to disallow duplicate names
+when send is called set that message to the current one
