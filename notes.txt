@@ -27,3 +27,4 @@ when send is called set that message to the current one
 if recipeint != null = check if stream closes back in
 for delete command, say previous > next > none
 disallow registering and sending to blocked clients
+dont have to disallow quit

@@ -109,9 +109,11 @@ public class ServerReceiver extends Thread {
 								ArrayList<Message> initialArrayList = new ArrayList<Message>();
 								messageStore.put(nickname, initialArrayList);
 
-								System.out.println("User " + nickname + " registered.");
+								System.out.println("Client " + myClientsID + ": User " + nickname + " registered.");
+								sendServerMessage("User " + nickname + " registered.");
 							} else {
-								System.out.println(nickname + " is already registered.");
+								System.out.println("Client " + myClientsID + ": " + nickname + " is already registered.");
+								sendServerMessage(nickname + " is already registered. You can log in.")
 							}
 						} else {
 							// No point in closing socket. Just give up.

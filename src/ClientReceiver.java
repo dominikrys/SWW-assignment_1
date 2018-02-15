@@ -36,15 +36,3 @@ public class ClientReceiver extends Thread {
 		}
 	}
 }
-
-/*
- * 
- * The method readLine returns null at the end of the stream
- * 
- * It may throw IoException if an I/O error occurs
- * 
- * See https://docs.oracle.com/javase/8/docs/api/java/io/BufferedReader.html#
- * readLine--
- * 
- * 
- */

@@ -32,6 +32,10 @@ public class ClientSender extends Thread {
 		// So that we can use the method readLine:
 		BufferedReader user = new BufferedReader(new InputStreamReader(System.in));
 
+		// Notify user of usage
+		System.out.println("Welcome to the chat app. Please enter one of register, login, logout, send, \"\r\n"
+				+ "							+ \"previous, next, delete, quit");
+
 		try {
 			// Then loop forever sending messages to recipients via the server:
 			while (running) {
