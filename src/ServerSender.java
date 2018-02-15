@@ -36,13 +36,3 @@ public class ServerSender extends Thread {
 		}
 	}
 }
-
-/*
- * 
- * Throws InterruptedException if interrupted while waiting
- * 
- * See
- * https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/BlockingQueue.
- * html#take--
- * 
- */

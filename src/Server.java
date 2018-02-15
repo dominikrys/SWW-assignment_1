@@ -1,9 +1,6 @@
 
 // Usage:
 //        java Server
-//
-// There is no provision for ending the server gracefully.  It will
-// end if (and only if) something exceptional happens.
 
 import java.io.BufferedReader;
 import java.io.IOException;

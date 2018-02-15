@@ -140,11 +140,14 @@ public class ServerReceiver extends Thread {
 									loggedIn = true;
 									System.out.println(
 											"Client " + myClientsID + " successfully logged in as " + nickname);
+									sendServerMessage("Successfully logged in as " + nickname);
 								} else {
-									System.out.println(nickname + " isn't registered. Please register first.");
+									System.out.println("Client " + myClientsID + ": " + nickname + " isn't registered. Please register first.");
+									sendServerMessage(nickname + " isn't registered. Please register the nickname first.");
 								}
 							} else {
 								System.out.println("Client " + myClientsID + " is already logged in to an account");
+								sendServerMessage("");
 							}
 						} else {
 							// No point in closing socket. Just give up.

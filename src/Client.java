@@ -5,9 +5,6 @@
 // After initializing and opening appropriate sockets, we start two
 // client threads, one to send messages, and another one to get
 // messages.
-//
-// Another limitation is that there is no provision to terminate when
-// the server dies.
 
 import java.io.BufferedReader;
 
@@ -34,8 +31,6 @@ class Client {
 		BufferedReader fromServer = null;
 		Socket server = null;
 
-		String nickname = null;
-
 		try {
 			server = new Socket(hostname, Port.number); // Matches AAAAA in Server.java
 			toServer = new PrintStream(server.getOutputStream());
@@ -45,8 +40,6 @@ class Client {
 		} catch (IOException e) {
 			Report.errorAndGiveUp("The server doesn't seem to be running " + e.getMessage());
 		}
-
-		boolean loggedIn = false;
 
 		// Create two client threads of a diferent nature:
 		ClientSender sender = new ClientSender(toServer);
