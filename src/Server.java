@@ -1,7 +1,3 @@
-
-// Usage:
-//        java Server
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -14,6 +10,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+// The server class
+// Stores data which is shared by all clients (lists of users, clients logged in to a certain user
+// and starts threads for receiving data from the client and sending data to the client
+//
+// Usage:
+// java Server
+
 public class Server {
 
 	/**
@@ -21,13 +24,14 @@ public class Server {
 	 */
 	public static void main(String[] args) {
 
-		// This table will be shared by the server threads:
+		// Declare ClientTable which will be responsible for message queues for clients
 		ClientTable clientTable = new ClientTable();
 
-		// Map of currently logged clients and their usernames
+		// ConcurrentHashMap of currently logged clients and their usernames
 		ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
 
-		// List of all registered users
+		// ConcurrentHashMap of all registered users, boolean being whether that user is
+		// currrently logged in or not
 		ConcurrentHashMap<String, Boolean> registeredUsers = new ConcurrentHashMap<String, Boolean>();
 
 		// ConcurrentHashMap for storing all messages
@@ -38,16 +42,18 @@ public class Server {
 
 		ServerSocket serverSocket = null;
 
+		// Each client is given an ID, so an initial one is declared here
 		int clientID = 1;
 
+		// Set up new server socket
 		try {
 			serverSocket = new ServerSocket(Port.number);
 		} catch (IOException e) {
 			Report.errorAndGiveUp("Couldn't listen on port " + Port.number);
 		}
 
+		// Try catch block for IO errors
 		try {
-
 			// We loop for ever, as servers usually do.
 			while (true) {
 				// Listen to the socket, accepting connections from new clients:
@@ -56,11 +62,9 @@ public class Server {
 				// This is so that we can use readLine():
 				BufferedReader fromClient = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-				boolean loggedIn = false;
-
-				Report.behaviour("Client " + clientID + " connected");
-				// We add the client to the table:
+				// Add client ID to the table and send a message to the server
 				clientTable.add(clientID);
+				Report.behaviour("Client " + clientID + " connected");
 
 				// We create and start a new thread to write to the client:
 				PrintStream toClient = new PrintStream(socket.getOutputStream());
@@ -72,14 +76,12 @@ public class Server {
 						nicknameToIDMap, registeredUsers, messageStore, currentMessageMap);
 				serverReceiver.start();
 
+				// Increment the client ID so the next client gets set another ID
 				clientID++;
 
 			}
 		} catch (IOException e) {
-			// Lazy approach:
 			Report.error("IO error " + e.getMessage());
-			// A more sophisticated approach could try to establish a new
-			// connection. But this is beyond the scope of this simple exercise.
 		}
 	}
 }

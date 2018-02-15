@@ -1,4 +1,3 @@
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
@@ -37,7 +36,8 @@ public class ServerReceiver extends Thread {
 	 */
 	public ServerReceiver(Integer id, BufferedReader c, ClientTable t, ServerSender s,
 			ConcurrentHashMap<String, ArrayList<Integer>> _nicknameToIDMap,
-			ConcurrentHashMap<String, Boolean> _registeredUsers, ConcurrentHashMap<String, ArrayList<Message>> _messageStore,
+			ConcurrentHashMap<String, Boolean> _registeredUsers,
+			ConcurrentHashMap<String, ArrayList<Message>> _messageStore,
 			ConcurrentHashMap<String, Integer> _currentMessageMap) {
 		myClientsID = id;
 		myClient = c;
@@ -132,7 +132,7 @@ public class ServerReceiver extends Thread {
 						nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
 						if (nickname != null) {
 							if (loggedIn == false) {
-								if (registeredUsers.containsKey(nickname) ) {
+								if (registeredUsers.containsKey(nickname)) {
 									myClientsName = nickname;
 
 									// Assign the client's ID to an arraylist
@@ -325,8 +325,9 @@ public class ServerReceiver extends Thread {
 										extractedMessages.add(msg);
 										messageStore.put(recipient, extractedMessages);
 
-										// Set the message that has just been sent to be the current message if the user is logged in
-										if (registeredUsers.get(recipient)  == true) {
+										// Set the message that has just been sent to be the current message if the user
+										// is logged in
+										if (registeredUsers.get(recipient) == true) {
 											currentMessageMap.put(recipient, extractedMessages.size() - 1);
 										}
 

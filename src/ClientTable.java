@@ -1,4 +1,3 @@
-
 // Each nickname has a different incoming-message queue.
 
 import java.io.IOException;

@@ -1,28 +1,21 @@
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 
-// Repeatedly reads recipient's nickname and text from the user in two
-// separate lines, sending them to the server (read by ServerReceiver
-// thread).
+// Thread for sending data from the client to the server
 
 public class ClientSender extends Thread {
 
-	private String nickname;
 	private PrintStream server;
 	private boolean running;
-	private boolean loggedIn;
 
+	/**
+	 * The constructor
+	 */
 	ClientSender(PrintStream server) {
 		this.server = server;
 		running = true;
-		loggedIn = false;
-	}
-
-	public void setNickname(String _nickname) {
-		loggedIn = true;
 	}
 
 	/**
@@ -32,15 +25,16 @@ public class ClientSender extends Thread {
 		// So that we can use the method readLine:
 		BufferedReader user = new BufferedReader(new InputStreamReader(System.in));
 
-		// Notify user of usage
+		// Tell the user how to use the program
 		System.out.println(
 				"Welcome to the chat app! Allowed commands: register, login, logout, send, previous, next, delete, quit");
 
+		// Try block in case communication breaks - i.e. client closed for some reason
 		try {
-			// Then loop forever sending messages to recipients via the server:
+			// Loop sending requests to ServerReceiver
 			while (running) {
 				// readLine reads the inital command - register, login, logout, send, previous,
-				// next, delete, quit
+				// next, delete, quit. Cases are ignored.
 				String userInput = user.readLine().toLowerCase();
 
 				// According to what has been input, ask the user for the right amount of input

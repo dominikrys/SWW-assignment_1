@@ -1,11 +1,6 @@
 comments
-make sure to always check if output suddentlly cuts off
 solution.md
 disallow nicknames like "quit" "server" or "", possibly ignore cases?
-keep updating arraylists and queues in while loop of server
-make method for sending server messages
-handle commands at the bottom of serverreceiver
-multiple clients
 remove all redundant imports and variables and methods
 solution md server checking if stuff logged in
 maybe add messaged to send back to user
@@ -30,3 +25,5 @@ disallow registering and sending to blocked clients
 dont have to disallow quit
 if a user logs back in, display all its missed messages
 allow closing by pressing cross
+solution md no "message sent"
+ignore cases

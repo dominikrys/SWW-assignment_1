@@ -1,4 +1,3 @@
-
 public class Message {
 
 	private final String sender;

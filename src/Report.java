@@ -1,4 +1,3 @@
-
 // This is to handle logging of normal and erroneous behaviours.
 
 public class Report {

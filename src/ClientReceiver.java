@@ -1,15 +1,16 @@
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.net.SocketException;
 
-// Gets messages from other clients via the server (by the
-// ServerSender thread).
+// Thread gets messages from other clients through ServerSender
 
 public class ClientReceiver extends Thread {
 
 	private BufferedReader server;
 
+	/**
+	 * The constructor
+	 */
 	ClientReceiver(BufferedReader server) {
 		this.server = server;
 	}
@@ -23,6 +24,7 @@ public class ClientReceiver extends Thread {
 			while (true) {
 				String s = server.readLine(); // Matches FFFFF in ServerSender.java
 
+				// Throw exception if null received as the server closed
 				if (s == null) {
 					throw new NullPointerException();
 				}

@@ -1,11 +1,3 @@
-
-// Usage:
-//        java Client server-hostname
-//
-// After initializing and opening appropriate sockets, we start two
-// client threads, one to send messages, and another one to get
-// messages.
-
 import java.io.BufferedReader;
 
 import java.io.IOException;
@@ -14,16 +6,22 @@ import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+// The Client class
+// Runs 2 threads, one for receiving data from the server and one for sending data to the server
+
+// Usage:
+// java Client server-hostname
+
 class Client {
 
 	public static void main(String[] args) {
 
-		// Check correct usage:
+		// Check correct usage
 		if (args.length != 1) {
 			Report.errorAndGiveUp("Usage: java Client server-hostname");
 		}
 
-		// Initialize information:
+		// Initialize hostname
 		String hostname = args[0];
 
 		// Open sockets:
@@ -41,11 +39,11 @@ class Client {
 			Report.errorAndGiveUp("The server doesn't seem to be running " + e.getMessage());
 		}
 
-		// Create two client threads of a diferent nature:
+		// Create a thread for sending to and a thread for receiving from the server
 		ClientSender sender = new ClientSender(toServer);
 		ClientReceiver receiver = new ClientReceiver(fromServer);
 
-		// Run them in parallel:
+		// Run them in parallel
 		sender.start();
 		receiver.start();
 
