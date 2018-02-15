@@ -28,7 +28,7 @@ public class Server {
 		ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
 
 		// List of all registered users
-		ConcurrentLinkedQueue<String> registeredUsers = new ConcurrentLinkedQueue<String>();
+		ConcurrentHashMap<String, Boolean> registeredUsers = new ConcurrentHashMap<String, Boolean>();
 
 		// ConcurrentHashMap for storing all messages
 		ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();

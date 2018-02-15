@@ -33,8 +33,8 @@ public class ClientSender extends Thread {
 		BufferedReader user = new BufferedReader(new InputStreamReader(System.in));
 
 		// Notify user of usage
-		System.out.println("Welcome to the chat app. Please enter one of register, login, logout, send, \"\r\n"
-				+ "							+ \"previous, next, delete, quit");
+		System.out.println(
+				"Welcome to the chat app! Allowed commands: register, login, logout, send, previous, next, delete, quit");
 
 		try {
 			// Then loop forever sending messages to recipients via the server:
@@ -55,9 +55,6 @@ public class ClientSender extends Thread {
 					server.println(userInput); // Matches CCCCC in ServerReceiver
 					String username = user.readLine();
 					server.println(username); // Matches FFFFF in ServerReceiver
-					// if (username.equals("")) {
-					// System.out.println("User cannot be null. Try another command.");
-					// }
 					break;
 				case "logout":
 				case "previous":
@@ -69,15 +66,11 @@ public class ClientSender extends Thread {
 					server.println(userInput); // Matches CCCCC in ServerReceiver
 					String recipient = user.readLine();
 					server.println(recipient); // Matches DDDDD in ClientSender.java
-					if (recipient.equals("")) {
-						System.out.println("Recipient cannot be null");
-					} else {
-						String text = user.readLine();
-						server.println(text); // Matches EEEEE in ClientSender.java
-					}
+					String text = user.readLine();
+					server.println(text); // Matches EEEEE in ClientSender.java
 					break;
 				default:
-					System.out.println("Command not recognised. Please enter one of register, login, logout, send, "
+					Report.error("Command not recognised. Please enter one of register, login, logout, send, "
 							+ "previous, next, delete, quit");
 					break;
 				}

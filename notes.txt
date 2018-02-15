@@ -28,3 +28,5 @@ if recipeint != null = check if stream closes back in
 for delete command, say previous > next > none
 disallow registering and sending to blocked clients
 dont have to disallow quit
+if a user logs back in, display all its missed messages
+allow closing by pressing cross
