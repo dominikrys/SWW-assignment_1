@@ -160,7 +160,7 @@ public class ServerReceiver extends Thread {
 						if (recipient != null) {
 							String text = myClient.readLine(); // Matches EEEEE in ClientSender.java
 
-							if (text != null &&) {
+							if (text != null) {
 								if (nicknameToIDMap.get(recipient) == null) {
 									System.out.println("Message " + text + " to unexistent recipient " + recipient);
 								} else {
@@ -183,7 +183,6 @@ public class ServerReceiver extends Thread {
 									}
 									
 									// Store message in server
-									ArrayList<Message> extractedMessages;
 									extractedMessages = messageStore.get(recipient);
 									if (extractedMessages.size() == 0) {
 										extractedMessages = new ArrayList<Message>();
