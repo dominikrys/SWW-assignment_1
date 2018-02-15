@@ -225,7 +225,8 @@ public class ServerReceiver extends Thread {
 						break;
 					case "logout":
 						if (loggedIn == true) {
-							// Remove client ID from the list of client IDs associated with the name this client is logged in to
+							// Remove client ID from the list of client IDs associated with the name this
+							// client is logged in to
 							ArrayList<Integer> extractedIDs = nicknameToIDMap.get(myClientsName);
 							extractedIDs.remove((Integer) myClientsID);
 							nicknameToIDMap.put(myClientsName, extractedIDs);
@@ -244,9 +245,11 @@ public class ServerReceiver extends Thread {
 						break;
 					case "previous":
 						if (loggedIn == true) {
-							ArrayList<Message> extractedMessages;
-							extractedMessages = messageStore.get(myClientsName);
+							// Get the user's mesages stored on the server
+							ArrayList<Message> extractedMessages = messageStore.get(myClientsName);
 
+							// Check if it's possible to see the previous message and print out it out,
+							// otherwise notify the server and user
 							if (extractedMessages.size() == 0) {
 								Report.error("Client " + myClientsID
 										+ " used command previous however no messages are stored for this nickname");
@@ -265,14 +268,18 @@ public class ServerReceiver extends Thread {
 										extractedMessages.get(currentMessageMap.get(myClientsName)));
 							}
 						} else {
+							// Notify the server and user of any errors
 							Report.error("Client " + myClientsID + ": used command previous but not logged in");
 							sendServerMessage("Can't use the command previous as this client is not logged in");
 						}
 						break;
 					case "next":
 						if (loggedIn == true) {
+							// Get the user's mesages stored on the server
 							ArrayList<Message> extractedMessages = messageStore.get(myClientsName);
 
+							// Check if it's possible to see the next message and print out it out,
+							// otherwise notify the server and user
 							if (extractedMessages.size() == 0) {
 								Report.error("Client " + myClientsID
 										+ " used command next however no messages are stored for this nickname");
@@ -291,15 +298,18 @@ public class ServerReceiver extends Thread {
 										extractedMessages.get(currentMessageMap.get(myClientsName)));
 							}
 						} else {
+							// Notify the server and user of any errors
 							Report.error("Client " + myClientsID + ": used command next but not logged in");
 							sendServerMessage("Can't use the command next as this client is not logged in");
 						}
 						break;
 					case "delete":
 						if (loggedIn == true) {
+							// Get the user's mesages stored on the server
 							ArrayList<Message> extractedMessages = messageStore.get(myClientsName);
 							int messageAmount = extractedMessages.size();
 
+							// Check if it's possibly to delete the message, and delete it if so
 							if (messageAmount == 0) {
 								Report.error("Client " + myClientsID
 										+ " used command delete however no messages are stored for this nickname");
@@ -316,29 +326,37 @@ public class ServerReceiver extends Thread {
 									currentMessageMap.put(myClientsName, currentMessageMap.get(myClientsName) - 1);
 								}
 
+								// Notify the server and user of behaviour
 								Report.behaviour("Message removed in client " + myClientsID);
 								sendServerMessage("Current message removed");
 							}
 						} else {
+							// Notify the server and user of any errors
 							Report.error("Client " + myClientsID + ": used command delete but not logged in");
 							sendServerMessage("Can't use the command delete as this client is not logged in");
 						}
 						break;
 					case "send":
+						// Get recipient from clientSender and check if null in case stream ended
 						String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
+
 						if (recipient != null) {
+							// Get text from clientSender and check if null in case stream ended
 							String text = myClient.readLine(); // Matches EEEEE in ClientSender.java
 
 							if (text != null) {
 								if (loggedIn == true) {
+									// Check if the recipient exists
 									if (nicknameToIDMap.get(recipient) == null) {
 										Report.error("Message " + text + " to unexistent recipient " + recipient);
 										sendServerMessage("Message sent to unexistent recipient");
 									} else {
+										// Create a message object with the appropriate information
 										Message msg = new Message(myClientsName, text);
 
 										// See how many client IDs there are with of the same name but different ID to
-										// allow a a user to have multiple copies running
+										// allow a a user to have multiple copies running (i.e. all client IDs logged in
+										// to the same account will receive the message)
 										ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
 										extractedIDs = nicknameToIDMap.get(recipient);
 
@@ -367,9 +385,11 @@ public class ServerReceiver extends Thread {
 											currentMessageMap.put(recipient, extractedMessages.size() - 1);
 										}
 
+										// Notify server of behaviour
 										Report.behaviour(myClientsName + " sent a message to " + recipient);
 									}
 								} else {
+									// Notify server and client of errors
 									Report.error("Client " + myClientsID + ": used command send but not logged in");
 									sendServerMessage("Can't use the command send as this client is not logged in");
 								}
@@ -398,6 +418,7 @@ public class ServerReceiver extends Thread {
 			// We end this thread (we don't do System.exit(1)).
 		}
 
+		// Interrupt the companion thread when this thread ends
 		Report.behaviour("Server receiver ending");
 		companion.interrupt();
 	}
