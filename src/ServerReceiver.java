@@ -61,6 +61,24 @@ public class ServerReceiver extends Thread {
 		recipientsQueue.offer(msg);
 	}
 
+	private void sendExistingMessage(String recipient, Message inputMsg) {
+		// See how many client IDs there are with of the same name but different ID to
+		// allow a a user to have multiple copies running
+		ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
+		extractedIDs = nicknameToIDMap.get(recipient);
+
+		for (Integer recipientID : extractedIDs) {
+			BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches
+																						// EEEEE
+																						// in
+																						// ServerSender.java
+
+			if (recipientsQueue != null) {
+				recipientsQueue.offer(inputMsg);
+			}
+		}
+	}
+
 	/**
 	 * Starts this server receiver.
 	 */
@@ -80,10 +98,17 @@ public class ServerReceiver extends Thread {
 						break;
 					case "register":
 						String nickname = myClient.readLine(); // Matches FFFFF in ServerReceiver
-						
+
 						if (nickname != null) {
 							if (!registeredUsers.contains(nickname)) {
+								// Add nickname to registered users
 								registeredUsers.add(nickname);
+
+								// Initialise a new arraylist in the messageStore so that it can be used by
+								// other parts of the program and won't throw nullpointer exceptions
+								ArrayList<Message> initialArrayList = new ArrayList<Message>();
+								messageStore.put(nickname, initialArrayList);
+
 								System.out.println("User " + nickname + " registered.");
 							} else {
 								System.out.println(nickname + " is already registered.");
@@ -111,7 +136,8 @@ public class ServerReceiver extends Thread {
 									nicknameToIDMap.put(nickname, extractedIDs);
 
 									loggedIn = true;
-									System.out.println("Client " + myClientsID + " successfully logged in as " + nickname);
+									System.out.println(
+											"Client " + myClientsID + " successfully logged in as " + nickname);
 								} else {
 									System.out.println(nickname + " isn't registered. Please register first.");
 								}
@@ -142,18 +168,27 @@ public class ServerReceiver extends Thread {
 					case "previous":
 						ArrayList<Message> extractedMessages;
 						extractedMessages = messageStore.get(myClientsName);
-						if (extractedMessages.size() != 0) {
-							
+
+						if (extractedMessages.size() == 0) {
+							System.out.println("Client " + myClientsID
+									+ " used command previous however no messages are stored for this client");
+						} else if (currentMessageMap.get(myClientsName) == 0) {
+							System.out.println("Client " + myClientsID
+									+ " used command previous however the current message is already on the first message");
 						} else {
-							System.out.println("Client " + clientID " used command previoud however no messaged are stored for this client");
+							// Set current message to previous message
+							currentMessageMap.put(myClientsName, currentMessageMap.get(myClientsName) - 1);
+
+							// Print message
+							sendExistingMessage(myClientsName,
+									extractedMessages.get(currentMessageMap.get(myClientsName)));
 						}
 						break;
 					case "next":
-						
-						
+
 						break;
 					case "delete":
-						
+
 						break;
 					case "send":
 						String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
@@ -181,7 +216,7 @@ public class ServerReceiver extends Thread {
 											recipientsQueue.offer(msg);
 										}
 									}
-									
+
 									// Store message in server
 									extractedMessages = messageStore.get(recipient);
 									if (extractedMessages.size() == 0) {
@@ -189,8 +224,8 @@ public class ServerReceiver extends Thread {
 									}
 									extractedMessages.add(msg);
 									messageStore.put(recipient, extractedMessages);
-									
-									//Set the message that has just been sent to be the current message
+
+									// Set the message that has just been sent to be the current message
 									currentMessageMap.put(recipient, extractedMessages.size() - 1);
 								}
 							} else {

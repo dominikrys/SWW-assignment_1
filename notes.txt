@@ -24,4 +24,4 @@ thought about messageStore storing hashmaps to tell which one is current but tha
 take last currentmessage is fone is being tracked down 
 hashmap to disallow duplicate names
 when send is called set that message to the current one
-if recipeint != null = check if stream closes
+if recipeint != null = check if stream closes back in
