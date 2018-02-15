@@ -10,6 +10,9 @@ public class ClientReceiver extends Thread {
 
 	/**
 	 * The constructor
+	 * 
+	 * @param server
+	 *            BufferedReader to receive data from
 	 */
 	ClientReceiver(BufferedReader server) {
 		this.server = server;

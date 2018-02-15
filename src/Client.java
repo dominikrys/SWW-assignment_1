@@ -1,12 +1,11 @@
 import java.io.BufferedReader;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-// The Client class
+// The client class
 // Runs 2 threads, one for receiving data from the server and one for sending data to the server
 
 // Usage:

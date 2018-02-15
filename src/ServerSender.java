@@ -1,8 +1,7 @@
 import java.io.PrintStream;
 import java.util.concurrent.BlockingQueue;
 
-// Continuously reads from message queue for a particular client,
-// forwarding to the client.
+// Thread which reads the message queue for each clients and forwards to the appropriate user
 
 public class ServerSender extends Thread {
 	private BlockingQueue<Message> clientQueue;
@@ -25,7 +24,11 @@ public class ServerSender extends Thread {
 	 * Starts this server sender.
 	 */
 	public void run() {
+		
+		// Try catch block for checking whether the stream is interrupted
 		try {
+			// Continuously loop, reading messages from the queue and sending to
+			// ClientReceiver
 			while (true) {
 				Message msg = clientQueue.take(); // Matches EEEEE in ServerReceiver
 				client.println(msg); // Matches FFFFF in ClientReceiver

@@ -12,6 +12,9 @@ public class ClientSender extends Thread {
 
 	/**
 	 * The constructor
+	 * 
+	 * @param server
+	 *            print stream to send data to
 	 */
 	ClientSender(PrintStream server) {
 		this.server = server;
