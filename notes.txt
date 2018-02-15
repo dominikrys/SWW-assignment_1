@@ -25,3 +25,5 @@ take last currentmessage is fone is being tracked down
 hashmap to disallow duplicate names
 when send is called set that message to the current one
 if recipeint != null = check if stream closes back in
+for delete command, say previous > next > none
+disallow registering and sending to blocked clients

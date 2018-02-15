@@ -203,7 +203,26 @@ public class ServerReceiver extends Thread {
 						}
 						break;
 					case "delete":
+						extractedMessages = messageStore.get(myClientsName);
+						int messageAmount = extractedMessages.size();
 
+						if (messageAmount == 0) {
+							System.out.println("Client " + myClientsID
+									+ " used command delete however no messages are stored for this nickname");
+						} else {
+							// Remove message
+							extractedMessages.remove((int) currentMessageMap.get(myClientsName));
+							messageStore.put(myClientsName, extractedMessages);
+
+							// Set current message to the previous value if it's the last value, otherwise
+							// leave it so the current message is the next message. If there are no more
+							// stored messages it doesn't matter as the value would get overriden
+							if (currentMessageMap.get(myClientsName) == messageAmount - 1) {
+								currentMessageMap.put(myClientsName, currentMessageMap.get(myClientsName) - 1);
+							}
+
+							System.out.println("Message removed in client " + myClientsID);
+						}
 						break;
 					case "send":
 						String recipient = myClient.readLine(); // Matches DDDDD in ClientSender.java
