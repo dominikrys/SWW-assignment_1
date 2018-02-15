@@ -4,3 +4,5 @@
 .project
 *.sh
 /sample-solution/
+.classpath
+.project
