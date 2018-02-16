@@ -1,12 +1,35 @@
 # Solution
-## GitLab repo: https://git.cs.bham.ac.uk/dxr714/SWW-assignment_1
+##### GitLab repo: https://git.cs.bham.ac.uk/dxr714/SWW-assignment_1
+ 
+This explains the different approaches I've taken when writing the program. I will skip talking about the functionality that was already there from the example.
 
-look up formatting
+### Client 
+Now run using `java Client server-hostname` instead of also specifying the name. The Constructor for `ClientSender` has been changed to not take the client name now.
+
+### ClientSender
+* Prints a message when the client is run to tell the user what commands can be used - makes it easier for the user.
+* While loop now runs when the `running` boolean is true. This is because all the commands the user can input are checked in a switch block, and a break in those wouldn't be able to break the loop.
+* Switch block that checks for what command has been input essentially only handles the amount of input that has to follow up the initial command (e.g. `send` needs 2 more inputs (the recipient and the text) and `previous` doesn't need any extra).
+
+### Server
+* The main functionality of sending messages to a certain username has changed. Since the server doesn't know what a client's name is when a client connects, instead each client is assigned an ID. Then, if a message is sent, the recipient's nickname is looked up in a ConcurrentHashMap which stored nicknames and corresponding IDs and sends the message to all the clients which have their ID assigned to that nickname - notice that my implementation allows multiple clients to log into the same username (in the brief it's mention that if this is done properly, extra marks will be awarded).
+  * In order to reflect this, ClientTable now instead of assigning a BlockingQueue to a string, it now assigns it to an integer (the client ID).
+* A couple more ConcurrentHashMaps have been declared. This is so that each client can share information such as who's logged in or registered.
+  * nicknameToIDMap - usernames as keys, and IDs of all the clients connected as this nickname as an ArrayList as the values.
+  * registeredUsers - usernames as keys and whether they're currently connected or not as the values (true means connected, false means disconnected).
+  * messageStore - usernames as keys, and ArrayLists of messages stored for each user as the values.
+  * currentMessageMap - usernames as keys and the index of the "current" message for each client as the value.
+* `ServerReceiver` gets all those ConcurrentHashMaps passed to it as well as the appropriate clientID instead of the nickname
+
+### ServerReceiver
+
+ClientReceiver, ServerSender and Message have been left essentially untouched.
+
 
 go through code and describe approach
 disallow names and ignore cases
 general testing
-assign interface instead of specialied
+assign interface instead of specialised
 switch null mention jls
 added running flags to break the switch statements
 when send is called set to current one
@@ -21,3 +44,4 @@ FROM ASSIGNMENT:
 whether user is logged in automatically after registering
 whether log in twice
 say which message becomes current message after delete
+allow multiple client connections
