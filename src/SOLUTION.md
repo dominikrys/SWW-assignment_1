@@ -37,6 +37,10 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 ### ServerReceiver
 * Gets all the `ConcurrentHashMap`s passed to it in its constructor as well as the appropriate clientID instead of the nickname
 
+* While loop now runs when the `running` boolean is true. This is because all the commands the user can input are checked in a switch block, and a break in those wouldn't be able to break the loop.
+
+* Switch block handles commands being passed to the server. It's in a try catch block for NullPointerException in case the user input is null - this can't be handled in the switch statement [as described here](https://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.110).
+
 * Every command that takes an input after the first command (those being login, register, send) check if the other inputs are not equal to null in case the input stream has closes
 
 * `register` gets user input and checks if the chosen nickname isn't an empty string or "server". Names like "quit" are allowed due to the new send message syntax, but server is not allowed as some messages will be sent from the server to the client to notify the user of any activity.
@@ -68,10 +72,5 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 
 * `delete` gets the current message if messages are being stored for the user, removes it from the `messageStore` `ConcurrentHashMap` and sets the current message to the "next" message, if not possible then to the previous one and if no messages are left, then to -1. The server is notified of this behaviour
 
-
-
-### ServerReceiver
-* While loop now runs when the `running` boolean is true. This is because all the commands the user can input are checked in a switch block, and a break in those wouldn't be able to break the loop.
-* Switch block handles commands being passed to the server. It's in a try catch block for NullPointerException in case the user input is null - this can't be handled in the switch statement [as described here](https://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.110).
 
 `ClientReceiver`, `ServerSender` and `Message` have been left essentially untouched.
