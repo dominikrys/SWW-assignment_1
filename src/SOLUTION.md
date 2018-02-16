@@ -19,29 +19,31 @@ Now run using `java Client server-hostname` instead of also specifying the name.
   * registeredUsers - usernames as keys and whether they're currently connected or not as the values (true means connected, false means disconnected).
   * messageStore - usernames as keys, and ArrayLists of messages stored for each user as the values.
   * currentMessageMap - usernames as keys and the index of the "current" message for each client as the value.
-* `ServerReceiver` gets all those ConcurrentHashMaps passed to it as well as the appropriate clientID instead of the nickname
+* `ServerReceiver` gets all those ConcurrentHashMaps passed to it in its constructor as well as the appropriate clientID instead of the nickname
+* Every command that takes an input after the first command (those being login, register, send) check if the other inputs are not equal to null in case the input stream has closes
+* `register` gets user input and checks if the chosen nickname isn't an empty string or "server". Names like "quit" are allowed due to the new send message syntax, but server is not allowed as some messages will be sent from the server to the client to notify the user of any activity.
+if recipeint != null = check if stream closes back in
+for delete command, say next > none
+disallow names and ignore cases
+whether user is logged in automatically after registering
+* login
+if a user logs back in, display all its missed messages
+allow multiple client connections
+* logout
+* quit
+* send
+solution md no "message sent" notifications
+when send is called set to current one
+allow multiple client connections
+* next previous delete
+say which message becomes current message after delete
+sending messages from server
 
 ### ServerReceiver
+* While loop now runs when the `running` boolean is true. This is because all the commands the user can input are checked in a switch block, and a break in those wouldn't be able to break the loop.
+* Switch block handles commands being passed to the server. It's in a try catch block for NullPointerException in case the user input is null - this can't be handled in the switch statement [as described here](https://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.110).
 
 ClientReceiver, ServerSender and Message have been left essentially untouched.
 
-
-go through code and describe approach
-disallow names and ignore cases
-general testing
-assign interface instead of specialised
-switch null mention jls
-added running flags to break the switch statements
-when send is called set to current one
-go through brief and see what needs to be mentioned
-if recipeint != null = check if stream closes back in
-for delete command, say next > none
-dont have to disallow quit
-if a user logs back in, display all its missed messages
-solution md no "message sent" notifications
-
-FROM ASSIGNMENT: 
-whether user is logged in automatically after registering
-whether log in twice
-say which message becomes current message after delete
-allow multiple client connections
+General testing
+ignore cases
