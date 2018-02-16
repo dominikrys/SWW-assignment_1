@@ -98,6 +98,26 @@ public class ServerReceiver extends Thread {
 		}
 	}
 
+	// Method which handles logging the user out. Necessary to be a standalone
+	// method as this is called when the user quits and when it logs out
+	private void logout() {
+		// Remove client ID from the list of client IDs associated with the name this
+		// client is logged in to
+		ArrayList<Integer> extractedIDs = nicknameToIDMap.get(myClientsName);
+		extractedIDs.remove((Integer) myClientsID);
+		nicknameToIDMap.put(myClientsName, extractedIDs);
+
+		// Set logged in to false if no more instances clients are connected as this
+		// nickname and notify the user and server about behaviour
+		if (extractedIDs.size() == 0) {
+			registeredUsers.put(myClientsName, false);
+		}
+		Report.behaviour("Client " + myClientsID + " logged out of account " + myClientsName);
+		sendServerMessage("Logged out of account " + myClientsName);
+		loggedIn = false;
+		myClientsName = null;
+	}
+
 	/**
 	 * Starts this server receiver.
 	 */
@@ -114,10 +134,11 @@ public class ServerReceiver extends Thread {
 				try {
 					switch (userInput) {
 					case "quit":
-						// Either end of stream reached, just give up, or user wants to quit so quit the
-						// client
-						// Set the current client to logged out by setting the boolean to false
-						registeredUsers.put(myClientsName, false);
+						// Log the user out and quit the program
+						if (loggedIn == true) {
+							logout();
+						}
+						Report.behaviour("Client " + myClientsID + " has quit by request");
 						running = false;
 						break;
 					case "register":
@@ -126,7 +147,8 @@ public class ServerReceiver extends Thread {
 
 						// Check if nickname is null in case the stream ended
 						if (nickname != null) {
-							// Disallow the name "Server" as some messages are sent from the server, and empty strings
+							// Disallow the name "Server" as some messages are sent from the server, and
+							// empty strings
 							if (!(nickname.equals("") || nickname.toLowerCase().equals("server"))) {
 								if (loggedIn == false) {
 									// Check if user is registered
@@ -143,21 +165,25 @@ public class ServerReceiver extends Thread {
 										currentMessageMap.put(nickname, -1);
 
 										// Notify the server and user of behaviour
-										Report.behaviour("Client " + myClientsID + ": User " + nickname + " registered.");
+										Report.behaviour(
+												"Client " + myClientsID + ": User " + nickname + " registered.");
 										sendServerMessage("User " + nickname + " registered.");
 									} else {
 										// Notify the server and user of error
-										Report.error("Client " + myClientsID + ": " + nickname + " is already registered.");
+										Report.error(
+												"Client " + myClientsID + ": " + nickname + " is already registered.");
 										sendServerMessage(nickname + " is already registered. You can log in.");
 									}
 								} else {
 									// Notify the server and user of error
-									Report.error("Client " + myClientsID + ": tried to register when already logged in");
+									Report.error(
+											"Client " + myClientsID + ": tried to register when already logged in");
 									sendServerMessage("Can't register as as this client is logged in already");
 								}
 							} else {
 								// Notify the server and user of error
-								Report.error("Client " + myClientsID + ": tried to register as a nickname that's not allowed");
+								Report.error("Client " + myClientsID
+										+ ": tried to register as a nickname that's not allowed");
 								sendServerMessage("The username \"Server\" and empty names are not allowed");
 							}
 						} else {
@@ -232,18 +258,7 @@ public class ServerReceiver extends Thread {
 						break;
 					case "logout":
 						if (loggedIn == true) {
-							// Remove client ID from the list of client IDs associated with the name this
-							// client is logged in to
-							ArrayList<Integer> extractedIDs = nicknameToIDMap.get(myClientsName);
-							extractedIDs.remove((Integer) myClientsID);
-							nicknameToIDMap.put(myClientsName, extractedIDs);
-
-							// Set logged in to false and notify the user and server about behaviour
-							loggedIn = false;
-							Report.behaviour("Client " + myClientsID + " logged out of account " + myClientsName);
-							sendServerMessage("Logged out of account " + myClientsName);
-							registeredUsers.put(myClientsName, false);
-							myClientsName = null;
+							logout();
 						} else {
 							// Notify the server and user of any errors
 							Report.error("Client " + myClientsID + " not logged in, so can't be logged out");
