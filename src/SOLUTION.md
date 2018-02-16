@@ -34,7 +34,9 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 
   * currentMessageMap - usernames as keys and the index of the "current" message for each client as the value.
 
-* `ServerReceiver` gets all those ConcurrentHashMaps passed to it in its constructor as well as the appropriate clientID instead of the nickname
+### ServerReceiver
+* Gets all the `ConcurrentHashMap`s passed to it in its constructor as well as the appropriate clientID instead of the nickname
+
 * Every command that takes an input after the first command (those being login, register, send) check if the other inputs are not equal to null in case the input stream has closes
 
 * `register` gets user input and checks if the chosen nickname isn't an empty string or "server". Names like "quit" are allowed due to the new send message syntax, but server is not allowed as some messages will be sent from the server to the client to notify the user of any activity.
