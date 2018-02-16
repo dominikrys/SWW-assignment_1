@@ -22,15 +22,16 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 * `ServerReceiver` gets all those ConcurrentHashMaps passed to it in its constructor as well as the appropriate clientID instead of the nickname
 * Every command that takes an input after the first command (those being login, register, send) check if the other inputs are not equal to null in case the input stream has closes
 * `register` gets user input and checks if the chosen nickname isn't an empty string or "server". Names like "quit" are allowed due to the new send message syntax, but server is not allowed as some messages will be sent from the server to the client to notify the user of any activity.
-if recipeint != null = check if stream closes back in
-for delete command, say next > none
-disallow names and ignore cases
-whether user is logged in automatically after registering
-* login
-if a user logs back in, display all its missed messages
-allow multiple client connections
-* logout
-* quit
+  * Then check if this client is already logged in - can't register if already logged in, no other services/websites allow you to do that so I thought it's appropriate.
+  * Next check if the name is in the registeredUsers list and if not, add to it, set its status to false (not logged in) and set an empty list of messages for this user. Also set its "current" message to -1 as it has no messages currently stored.
+  * After this, notify the user by sending a message from the server (this is good as the user would normally not have access to a server log and can't see if their command worked or what is going on) and print a message on the server.
+  * I have chosen to not log in the user after registering automatically, as many other services/websites don't do that, and the user can just easily use the `login` command instead.
+* `login` reads the name and checks if the client is currently logged in. If it's not, it checks if the nickname is registered. Then it adds the client's ID to that nickname's list of logged in clients, allowing multiple clients to log in as the same nickname. Next it sets log in to true for the client and the nickname list and notifies the server and client. The next bit of code checks if there have been any messages that have been sent to this nickname while it was logged out and if there have, displays them and sets the "current" message as the latest message.
+* `logout` logs the user out if they're logged in by removing the client ID's from the list of IDs associated with the logged in nickname. IF no other clients are logged in to this nickname, the status of the nickname is set to `false` meaning it's logged out. The Client's name is then set to null, and `loggedIn` set to false.
+  * The program doesn't quit after being logged out. This makes the user experience more pleasant as if the user wants to e.g. log in to another account, they can without starting the client again. If the user does want to quit, they can just enter the `quit` command after logging out.
+* `quit` does everything the same as `logout` if the user is logged in, and then after sets `running` to false which ends the thread, as well as all the other related threads.
+
+
 * send
 solution md no "message sent" notifications
 when send is called set to current one
@@ -38,6 +39,7 @@ allow multiple client connections
 * next previous delete
 say which message becomes current message after delete
 sending messages from server
+for delete command, say next > none
 
 ### ServerReceiver
 * While loop now runs when the `running` boolean is true. This is because all the commands the user can input are checked in a switch block, and a break in those wouldn't be able to break the loop.

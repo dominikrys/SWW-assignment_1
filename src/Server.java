@@ -5,9 +5,7 @@ import java.io.PrintStream;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.ArrayList;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -30,17 +28,17 @@ public class Server {
 		ClientTable clientTable = new ClientTable();
 
 		// ConcurrentHashMap of currently logged clients and their usernames
-		ConcurrentMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
+		ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
 
 		// ConcurrentHashMap of all registered users, boolean being whether that user is
 		// currrently logged in or not
-		ConcurrentMap<String, Boolean> registeredUsers = new ConcurrentHashMap<String, Boolean>();
+		ConcurrentHashMap<String, Boolean> registeredUsers = new ConcurrentHashMap<String, Boolean>();
 
 		// ConcurrentHashMap for storing all messages
-		ConcurrentMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
+		ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
 
 		// ConcurrentHashMap for tracking which message is the "current" one
-		ConcurrentMap<String, Integer> currentMessageMap = new ConcurrentHashMap<String, Integer>();
+		ConcurrentHashMap<String, Integer> currentMessageMap = new ConcurrentHashMap<String, Integer>();
 
 		ServerSocket serverSocket = null;
 

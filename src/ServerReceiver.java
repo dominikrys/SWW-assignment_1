@@ -2,10 +2,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.LinkedHashMap;
 
 // Gets messages from client and puts them in a queue, for another
@@ -13,17 +11,17 @@ import java.util.LinkedHashMap;
 
 public class ServerReceiver extends Thread {
 	// Declare variables
-	private BufferedReader myClient;
-	private ClientTable clientTable;
-	private ServerSender companion;
-	private String myClientsName;
 	private int myClientsID;
 	private boolean running;
 	private boolean loggedIn;
-	private ConcurrentMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
-	private ConcurrentMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
-	private ConcurrentMap<String, Integer> currentMessageMap = new ConcurrentHashMap<String, Integer>();
-	private ConcurrentMap<String, Boolean> registeredUsers;
+	private String myClientsName;
+	private BufferedReader myClient;
+	private ClientTable clientTable;
+	private ServerSender companion;
+	private ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap = new ConcurrentHashMap<String, ArrayList<Integer>>();
+	private ConcurrentHashMap<String, ArrayList<Message>> messageStore = new ConcurrentHashMap<String, ArrayList<Message>>();
+	private ConcurrentHashMap<String, Integer> currentMessageMap = new ConcurrentHashMap<String, Integer>();
+	private ConcurrentHashMap<String, Boolean> registeredUsers;
 
 	/**
 	 * The constructor
@@ -48,10 +46,10 @@ public class ServerReceiver extends Thread {
 	 *            ConcurrentHashMap that stores each nikname's "current" message
 	 */
 	public ServerReceiver(Integer id, BufferedReader clientReader, ClientTable table, ServerSender serverSender,
-			ConcurrentMap<String, ArrayList<Integer>> _nicknameToIDMap,
-			ConcurrentMap<String, Boolean> _registeredUsers,
-			ConcurrentMap<String, ArrayList<Message>> _messageStore,
-			ConcurrentMap<String, Integer> _currentMessageMap) {
+			ConcurrentHashMap<String, ArrayList<Integer>> _nicknameToIDMap,
+			ConcurrentHashMap<String, Boolean> _registeredUsers,
+			ConcurrentHashMap<String, ArrayList<Message>> _messageStore,
+			ConcurrentHashMap<String, Integer> _currentMessageMap) {
 		myClientsID = id;
 		myClient = clientReader;
 		clientTable = table;
@@ -211,6 +209,7 @@ public class ServerReceiver extends Thread {
 									if (nicknameToIDMap.get(nickname) != null) {
 										extractedIDs = nicknameToIDMap.get(nickname);
 									}
+									extractedIDs.add(myClientsID);
 									nicknameToIDMap.put(nickname, extractedIDs);
 
 									// Set logged in to true and add the user to the registered users list
