@@ -343,9 +343,11 @@ public class ServerReceiver extends Thread {
 
 								// Set current message to the previous value if it's the last value, otherwise
 								// leave it so the current message is the next message. If there are no more
-								// stored messages it doesn't matter as the value would get overriden
+								// stored messages set the value to -1
 								if (currentMessageMap.get(myClientsName) == messageAmount - 1) {
 									currentMessageMap.put(myClientsName, currentMessageMap.get(myClientsName) - 1);
+								} else if (messageAmount == 1) {
+									currentMessageMap.put(myClientsName, -1);
 								}
 
 								// Notify the server and user of behaviour
@@ -371,7 +373,7 @@ public class ServerReceiver extends Thread {
 									// Check if the recipient exists
 									if (nicknameToIDMap.get(recipient) == null) {
 										Report.error("Message " + text + " to unexistent recipient " + recipient);
-										sendServerMessage("Message sent to unexistent recipient");
+										sendServerMessage("Message sent to a nonexistent recipient");
 									} else {
 										// Create a message object with the appropriate information
 										Message msg = new Message(myClientsName, text);
