@@ -443,7 +443,7 @@ public class ServerReceiver extends Thread {
 		}
 
 		// Interrupt the companion thread when this thread ends
-		Report.behaviour("Server receiver ending");
+		Report.behaviour("Server receiver ending for client " + myClientsID);
 		companion.interrupt();
 	}
 }
