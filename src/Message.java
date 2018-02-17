@@ -1,6 +1,8 @@
+import java.io.Serializable;
+
 // The Message class
 
-public class Message {
+public class Message implements Serializable{
 
 	// Variables of which each message is made of
 	private final String sender;

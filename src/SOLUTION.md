@@ -61,13 +61,11 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 
 * `quit` does everything the same as `logout` if the user is logged in, and then after sets `running` to false which ends the thread, as well as all the other related threads.
 
-* `send` gets the recipient and the message contents. If the user is logged in it then tries to send the message - is the recipient isn't registered, it tells the server that the message is for a nonexistent recipient.
-
-   * I could have also send a message back to the client saying that the user isn't registered, but didn't feel like that was necessary.
+* `send` gets the recipient and the message contents. If the user is logged in it then tries to send the message - is the recipient isn't registered, it tells the server and user that the message is for a nonexistent recipient.
 
 * A `message` object is then created and added to the blocking queues of all clients currently logged in as the recipient. The message is then stored on the server in the `messageStore` `ConcurrentHashMap` and if the user is logged in, also sets the recipient's "current" message to this one that has just been sent. At the end notify the server that messages have been sent - this could realistically either be taken out or reduced to just "myClientsName + sent a message" as it may be a privacy concern.
 
-  * The sender isn't notified that the message has been sent as I feel like that would clutter the client's console if a lot of messages are sent.
+  * The sender is notified about the message being sent so they know their request has worked.
 
 * `next` and `previous` work similarly in the sense that they both check if the user is logged in, they get the client's stored messages (if they have messages and if it's possible i.e. can't get the next message if the "current" message is already the newest message), set the "current" message to that message and then put it into the client's message queue without storing it. The server is notified of this.
 

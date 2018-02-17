@@ -1,11 +1,19 @@
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.FileOutputStream;
+import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.FileNotFoundException;
 import java.net.ServerSocket;
+import java.net.SocketException;
 import java.net.Socket;
 import java.util.LinkedHashMap;
 import java.util.ArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -40,10 +48,37 @@ public class Server {
 		// ConcurrentHashMap for tracking which message is the "current" one
 		ConcurrentHashMap<String, Integer> currentMessageMap = new ConcurrentHashMap<String, Integer>();
 
+		// Check if there is there exists a file with registeredUsers, messageStore and
+		// currentMessageMap and if there is, read from it
+		try {
+			File inputFile = new File("serverdata/userData.ser");
+			if (inputFile.exists() && !inputFile.isDirectory()) { 
+				Report.behaviour("Existing userData.ser file found, reading from it now...");
+				FileInputStream fileInputStream = new FileInputStream(inputFile);
+			    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+			    registeredUsers = (ConcurrentHashMap<String, Boolean>) objectInputStream.readObject();
+			    messageStore = (ConcurrentHashMap<String, ArrayList<Message>>) objectInputStream.readObject();
+			    currentMessageMap = (ConcurrentHashMap<String, Integer>) objectInputStream.readObject();
+			    objectInputStream.close();
+			    fileInputStream.close();
+			    Report.behaviour("userData.ser file read successfully!");
+			}
+			else {
+				Report.behaviour("No prior server data detected. Skipping read.");
+			}
+		} catch (IOException e) {
+			Report.error("IOException occured when trying to read userData.ser file: " + e.getMessage());
+		} catch (ClassNotFoundException e) {
+			Report.error("ClassNotFound exception occured when trying to read userData.ser file: " + e.getMessage());
+		}
+
 		ServerSocket serverSocket = null;
 
 		// Each client is given an ID, so an initial one is declared here
 		int clientID = 1;
+
+		// Set an AtomicBoolean as the running flag
+		AtomicBoolean running = new AtomicBoolean(true);
 
 		// Set up new server socket
 		try {
@@ -52,10 +87,15 @@ public class Server {
 			Report.errorAndGiveUp("Couldn't listen on port " + Port.number);
 		}
 
+		// Start the ServerInputReceiver thread for handling user input to server
+		(new ServerInputReceiver(running, serverSocket)).start();
+
 		// Try catch block for IO errors
 		try {
+			Report.behaviour("Server started, listening to connections now. To quit server, type \"quit\".");
+			
 			// We loop for ever, as servers usually do.
-			while (true) {
+			while (running.get() == true) {
 				// Listen to the socket, accepting connections from new clients:
 				Socket socket = serverSocket.accept(); // Matches AAAAA in Client
 
@@ -78,10 +118,28 @@ public class Server {
 
 				// Increment the client ID so the next client gets set another ID
 				clientID++;
-
 			}
 		} catch (IOException e) {
-			Report.error("IO error " + e.getMessage());
+			Report.error("IO error " + e.getMessage() + ". Server possibly ended by request.");
+		}
+
+		// Save registeredUsers, messageStore and currentMessageMap
+		try {
+			File parentDirectory = new File("serverdata/");
+			parentDirectory.mkdirs();
+			File outputFile = new File(parentDirectory, "userData.ser");
+			outputFile.createNewFile();
+
+			FileOutputStream fileOut = new FileOutputStream(outputFile);
+			ObjectOutputStream outStream = new ObjectOutputStream(fileOut);
+			outStream.writeObject(registeredUsers);
+			outStream.writeObject(messageStore);
+			outStream.writeObject(currentMessageMap);
+			Report.behaviour("registeredUsers, messageStore and currentMessageMap written to serverdata/userdata.ser");
+			outStream.close();
+			fileOut.close();
+		} catch (IOException i) {
+			i.printStackTrace();
 		}
 	}
 }

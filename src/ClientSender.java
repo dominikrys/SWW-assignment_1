@@ -57,6 +57,7 @@ public class ClientSender extends Thread {
 				case "previous":
 				case "next":
 				case "delete":
+				case "current":
 					server.println(userInput); // Matches CCCCC in ServerReceiver
 					break;
 				case "send":

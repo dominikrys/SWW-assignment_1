@@ -188,6 +188,7 @@ public class ServerReceiver extends Thread {
 							}
 						} else {
 							// No point in closing socket. Just give up.
+							logout();
 							return;
 						}
 						break;
@@ -252,6 +253,7 @@ public class ServerReceiver extends Thread {
 							}
 						} else {
 							// No point in closing socket. Just give up.
+							logout();
 							return;
 						}
 
@@ -325,6 +327,29 @@ public class ServerReceiver extends Thread {
 							sendServerMessage("Can't use the command next as this client is not logged in");
 						}
 						break;
+					case "current": 
+						if (loggedIn == true) {
+							// Get the user's mesages stored on the server
+							ArrayList<Message> extractedMessages = messageStore.get(myClientsName);
+
+							// Check if it's possible to see the next message and print out it out,
+							// otherwise notify the server and user
+							if (extractedMessages.size() == 0) {
+								Report.error("Client " + myClientsID
+										+ " used command current however no messages are stored for this nickname");
+								sendServerMessage(
+										"Can't use the current command as no messages are currently stored for this user");
+							} else {
+								// Print current message
+								sendExistingMessage(myClientsName,
+										extractedMessages.get(currentMessageMap.get(myClientsName)));
+							}
+						} else {
+							// Notify the server and user of any errors
+							Report.error("Client " + myClientsID + ": used command current but not logged in");
+							sendServerMessage("Can't use the command current as this client is not logged in");
+						}
+						break;
 					case "delete":
 						if (loggedIn == true) {
 							// Get the user's mesages stored on the server
@@ -373,7 +398,7 @@ public class ServerReceiver extends Thread {
 									// Check if the recipient exists
 									if (nicknameToIDMap.get(recipient) == null) {
 										Report.error("Message " + text + " to unexistent recipient " + recipient);
-										sendServerMessage("Message sent to a nonexistent recipient");
+										sendServerMessage("Message sent to a nonexistent recipient" + recipient);
 									} else {
 										// Create a message object with the appropriate information
 										Message msg = new Message(myClientsName, text);
@@ -409,8 +434,9 @@ public class ServerReceiver extends Thread {
 											currentMessageMap.put(recipient, extractedMessages.size() - 1);
 										}
 
-										// Notify server of behaviour
+										// Notify server and user of behaviour
 										Report.behaviour(myClientsName + " sent a message to " + recipient);
+										sendServerMessage("Message sent to " + recipient);
 									}
 								} else {
 									// Notify server and client of errors
@@ -420,10 +446,12 @@ public class ServerReceiver extends Thread {
 
 							} else {
 								// No point in closing socket. Just give up.
+								logout();
 								return;
 							}
 						} else {
 							// No point in closing socket. Just give up.
+							logout();
 							return;
 						}
 						break;
@@ -433,13 +461,14 @@ public class ServerReceiver extends Thread {
 					}
 				} catch (NullPointerException e) {
 					Report.error("NullPointer exception: " + e.getMessage());
+					logout();
 					running = false;
 				}
 			}
 		} catch (IOException e) {
 			Report.error("Something went wrong with the client " + myClientsName + " " + e.getMessage());
+			logout();
 			// No point in trying to close sockets. Just give up.
-			// We end this thread (we don't do System.exit(1)).
 		}
 
 		// Interrupt the companion thread when this thread ends
