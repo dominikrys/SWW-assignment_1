@@ -41,6 +41,7 @@ public class ServerInputReceiver extends Thread {
 				if (userInput.equals("quit")) {
 					running.set(false);
 					serverSocket.close();
+					Report.behaviour("Quit request received, server will quit when all connected clients have quit...");
 				}
 			} catch (IOException e) {
 				System.out.println("Quitting: " + e.getMessage());

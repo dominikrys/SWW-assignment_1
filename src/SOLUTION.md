@@ -73,3 +73,17 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 
 
 `ClientReceiver`, `ServerSender` and `Message` have been left essentially untouched, apart from comments and formatting.
+
+##Extra Functionality
+
+* I've chosen to get the server to save all users' messages (along with the "current" messages and the registered users list) to a file, and then when the server is restarted, to read from the file. This essentially preserves the whole state of the server on restart.
+
+* In order to achieve this I also had to get the server to get input from the user, so the user can enter "quit" on the server. This also added extra functionality in a way as now I can run implement server commands very easily, however I've limited it to just `quit` for this assignment.
+
+  * I've implemented this by having the server start a new thread `ServerInputReceiver` which reads input from the user. I had to write a new thread as the server is constantly listening to new client connections, which blocks the server and wouldn't allow it to listen to input. When "quit" is entered, the server port is closed and the `AtomicBoolean` running set to false. The server then ends when all clients have disconnected - I could have forced a quit here, however for this assignment is would be better to make sure all client threads are ended gracefully before shutting down the server.
+
+* The `registeredUsers`, `messageStore` and `currentMessageMap` objects are all stored in a file in the directory `/serverdata/userData.ser` after being serialized. To achieve this I also had to get the `Message` object to implement `Serializable` as `currentMessageMap`stores `Message` objects.
+
+* As an extra, I've also added the command `current` that the user can enter. I felt that would go well with the existing `next` and `previous` methods, especially as now that the messages are stored in a file, a user might want to come back, log back in and check what their "current" message is easily.
+
+* If it counts, I have also provided extra logging messages to the server and client so the user knows exactly what is going on.

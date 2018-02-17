@@ -327,7 +327,7 @@ public class ServerReceiver extends Thread {
 							sendServerMessage("Can't use the command next as this client is not logged in");
 						}
 						break;
-					case "current": 
+					case "current":
 						if (loggedIn == true) {
 							// Get the user's mesages stored on the server
 							ArrayList<Message> extractedMessages = messageStore.get(myClientsName);

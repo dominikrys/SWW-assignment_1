@@ -31,7 +31,7 @@ public class Server {
 	 * Start the server listening for connections.
 	 */
 	public static void main(String[] args) {
-		
+
 		// Initialize server socket
 		ServerSocket serverSocket = null;
 
@@ -67,7 +67,7 @@ public class Server {
 				messageStore = (ConcurrentHashMap<String, ArrayList<Message>>) objectInputStream.readObject();
 				currentMessageMap = (ConcurrentHashMap<String, Integer>) objectInputStream.readObject();
 
-				//Close streams
+				// Close streams
 				objectInputStream.close();
 				fileInputStream.close();
 				Report.behaviour("userData.ser file read successfully!");
@@ -83,7 +83,8 @@ public class Server {
 		// Each client is given an ID, so an initial one is declared here
 		int clientID = 1;
 
-		// Set an AtomicBoolean as the running flag. AtomicBoolean used here due to the ServerInputReceiver being able to modify it
+		// Set an AtomicBoolean as the running flag. AtomicBoolean used here due to the
+		// ServerInputReceiver being able to modify it
 		AtomicBoolean running = new AtomicBoolean(true);
 
 		// Set up new server socket
@@ -129,7 +130,8 @@ public class Server {
 			Report.error("IO error " + e.getMessage() + ". Server possibly ended by request.");
 		}
 
-		// After main method ended, save registeredUsers, messageStore and currentMessageMap to a file
+		// After main method ended, save registeredUsers, messageStore and
+		// currentMessageMap to a file
 		try {
 			// Create the directory and file
 			File parentDirectory = new File("serverdata/");
@@ -144,12 +146,12 @@ public class Server {
 			outStream.writeObject(messageStore);
 			outStream.writeObject(currentMessageMap);
 			Report.behaviour("registeredUsers, messageStore and currentMessageMap written to serverdata/userdata.ser");
-			
-			//Close streams
+
+			// Close streams
 			outStream.close();
 			fileOut.close();
 		} catch (IOException e) {
-			Report.error("IOExceptionL "e.printStackTrace());
+			Report.error("IOException: " + e.getMessage());
 		}
 	}
 }
