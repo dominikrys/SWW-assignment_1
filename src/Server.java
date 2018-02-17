@@ -61,8 +61,7 @@ public class Server {
 				FileInputStream fileInputStream = new FileInputStream(inputFile);
 				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
 
-				// Write to each ConcurrentHashMap according to the order the file was initially
-				// written to in
+				// Read each ConcurrentHashMap that has been saved
 				registeredUsers = (ConcurrentHashMap<String, Boolean>) objectInputStream.readObject();
 				messageStore = (ConcurrentHashMap<String, ArrayList<Message>>) objectInputStream.readObject();
 				currentMessageMap = (ConcurrentHashMap<String, Integer>) objectInputStream.readObject();

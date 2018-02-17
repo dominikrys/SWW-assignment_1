@@ -87,3 +87,5 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 * As an extra, I've also added the command `current` that the user can enter. I felt that would go well with the existing `next` and `previous` methods, especially as now that the messages are stored in a file, a user might want to come back, log back in and check what their "current" message is easily.
 
 * If it counts, I have also provided extra logging messages to the server and client so the user knows exactly what is going on.
+
+* As mentioned before, if a user has been logged out and messages were sent to it, after logging back in they will get displayed their missed messages.
