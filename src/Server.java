@@ -31,6 +31,9 @@ public class Server {
 	 * Start the server listening for connections.
 	 */
 	public static void main(String[] args) {
+		
+		// Initialize server socket
+		ServerSocket serverSocket = null;
 
 		// Declare ClientTable which will be responsible for message queues for clients
 		ClientTable clientTable = new ClientTable();
@@ -52,18 +55,23 @@ public class Server {
 		// currentMessageMap and if there is, read from it
 		try {
 			File inputFile = new File("serverdata/userData.ser");
-			if (inputFile.exists() && !inputFile.isDirectory()) { 
+			if (inputFile.exists() && !inputFile.isDirectory()) {
 				Report.behaviour("Existing userData.ser file found, reading from it now...");
+
 				FileInputStream fileInputStream = new FileInputStream(inputFile);
-			    ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
-			    registeredUsers = (ConcurrentHashMap<String, Boolean>) objectInputStream.readObject();
-			    messageStore = (ConcurrentHashMap<String, ArrayList<Message>>) objectInputStream.readObject();
-			    currentMessageMap = (ConcurrentHashMap<String, Integer>) objectInputStream.readObject();
-			    objectInputStream.close();
-			    fileInputStream.close();
-			    Report.behaviour("userData.ser file read successfully!");
-			}
-			else {
+				ObjectInputStream objectInputStream = new ObjectInputStream(fileInputStream);
+
+				// Write to each ConcurrentHashMap according to the order the file was initially
+				// written to in
+				registeredUsers = (ConcurrentHashMap<String, Boolean>) objectInputStream.readObject();
+				messageStore = (ConcurrentHashMap<String, ArrayList<Message>>) objectInputStream.readObject();
+				currentMessageMap = (ConcurrentHashMap<String, Integer>) objectInputStream.readObject();
+
+				//Close streams
+				objectInputStream.close();
+				fileInputStream.close();
+				Report.behaviour("userData.ser file read successfully!");
+			} else {
 				Report.behaviour("No prior server data detected. Skipping read.");
 			}
 		} catch (IOException e) {
@@ -72,12 +80,10 @@ public class Server {
 			Report.error("ClassNotFound exception occured when trying to read userData.ser file: " + e.getMessage());
 		}
 
-		ServerSocket serverSocket = null;
-
 		// Each client is given an ID, so an initial one is declared here
 		int clientID = 1;
 
-		// Set an AtomicBoolean as the running flag
+		// Set an AtomicBoolean as the running flag. AtomicBoolean used here due to the ServerInputReceiver being able to modify it
 		AtomicBoolean running = new AtomicBoolean(true);
 
 		// Set up new server socket
@@ -93,7 +99,7 @@ public class Server {
 		// Try catch block for IO errors
 		try {
 			Report.behaviour("Server started, listening to connections now. To quit server, type \"quit\".");
-			
+
 			// We loop for ever, as servers usually do.
 			while (running.get() == true) {
 				// Listen to the socket, accepting connections from new clients:
@@ -123,23 +129,27 @@ public class Server {
 			Report.error("IO error " + e.getMessage() + ". Server possibly ended by request.");
 		}
 
-		// Save registeredUsers, messageStore and currentMessageMap
+		// After main method ended, save registeredUsers, messageStore and currentMessageMap to a file
 		try {
+			// Create the directory and file
 			File parentDirectory = new File("serverdata/");
 			parentDirectory.mkdirs();
 			File outputFile = new File(parentDirectory, "userData.ser");
 			outputFile.createNewFile();
 
+			// Write objects to file
 			FileOutputStream fileOut = new FileOutputStream(outputFile);
 			ObjectOutputStream outStream = new ObjectOutputStream(fileOut);
 			outStream.writeObject(registeredUsers);
 			outStream.writeObject(messageStore);
 			outStream.writeObject(currentMessageMap);
 			Report.behaviour("registeredUsers, messageStore and currentMessageMap written to serverdata/userdata.ser");
+			
+			//Close streams
 			outStream.close();
 			fileOut.close();
-		} catch (IOException i) {
-			i.printStackTrace();
+		} catch (IOException e) {
+			Report.error("IOExceptionL "e.printStackTrace());
 		}
 	}
 }
