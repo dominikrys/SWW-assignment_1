@@ -20,72 +20,70 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 
 
 ### Server
-* The main functionality of sending messages to a certain username has changed. Since the server doesn't know what a client's name is when a client connects, instead each client is assigned an ID. Then, if a message is sent, the recipient's nickname is looked up in a ConcurrentHashMap which stored nicknames and corresponding IDs and sends the message to all the clients which have their ID assigned to that nickname - notice that my implementation allows multiple clients to log into the same username (in the brief it's mention that if this is done properly, extra marks will be awarded).
+* The main functionality of sending messages to a certain username has changed. Since the server doesn't know what a client's name is when a client connects, instead each client is assigned an ID. Then, if a message is sent, the recipient's nickname is looked up in a `ConcurrentHashMap` which stores nicknames and client IDs connected as this nickname and sends the message to all those clients - notice that my implementation allows multiple clients to log into the same username (in the instructions it mentions that if this is done properly, extra marks will be awarded).
 
-  * In order to reflect this, ClientTable now instead of assigning a BlockingQueue to a string, it now assigns it to an integer (the client ID).
+  * In order to reflect this, `ClientTable` now instead of assigning a BlockingQueue to a string, it now assigns it to an integer (the client ID).
 
-* A couple more ConcurrentHashMaps have been declared. This is so that each client can share information such as who's logged in or registered.
+* A couple more `ConcurrentHashMap`s have been declared. This is so that each client can share information such as who's logged in or registered.
 
-  * nicknameToIDMap - usernames as keys, and IDs of all the clients connected as this nickname as an ArrayList as the values.
+  * `nicknameToIDMap` - usernames as keys, and IDs of all the clients connected as this nickname as an ArrayList as the values.
 
-  * registeredUsers - usernames as keys and whether they're currently connected or not as the values (true means connected, false means disconnected).
+  * `registeredUsers` - usernames as keys and whether they're currently connected or not as the values (true means there's a client connected to this nickname, false means there are no clients connected to that nickname).
 
-  * messageStore - usernames as keys, and ArrayLists of messages stored for each user as the values.
+  * `messageStore` - usernames as keys, and ArrayLists of messages stored for each user as the values.
 
-  * currentMessageMap - usernames as keys and the index of the "current" message for each client as the value.
+  * `currentMessageMap` - usernames as keys and the index of the "current" message in`messageStore` for each client as the value.
 
 ### ServerReceiver
 * Gets all the `ConcurrentHashMap`s passed to it in its constructor as well as the appropriate clientID instead of the nickname.
 
 * While loop now runs when the `running` boolean is true. This is because all the commands the user can input are checked in a switch block, and a break in those wouldn't be able to break the loop.
 
-* Switch block handles commands being passed to the server. It's in a try catch block for NullPointerException in case the user input is null - this can't be handled in the switch statement [as described here](https://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.110).
+* Switch block handles commands being passed to the server. It's in a try catch block for NullPointerException in case the user input is null - this can't be handled in the switch statement [as described in JLS here](https://docs.oracle.com/javase/specs/jls/se7/html/jls-14.html#jls-14.110).
 
-* Every command that takes an input after the first command (those being login, register, send) check if the other inputs are not equal to null in case the input stream has closes.
+* Every command that takes an input after the first command (those being login, register, send) checks if the other inputs are not equal to null in case the input stream has closes.
 
-* `register` gets user input and checks if the chosen nickname isn't an empty string or "server". Names like "quit" are allowed due to the new send message syntax, but server is not allowed as some messages will be sent from the server to the client to notify the user of any activity.
+* `register` gets user input and checks if the chosen nickname isn't an empty string or "server". Names like "quit" are allowed due to the new send message syntax, but "server" is not allowed as some messages will be sent from the server to the client to notify the user of any activity.
 
-  * Then check if this client is already logged in - can't register if already logged in, no other services/websites allow you to do that so I thought it's appropriate.
+  * Then check if this client is already logged in - can't register a new username if already logged in, no other services/websites allow you to do that so I thought it's appropriate.
 
   * Next check if the name is in the registeredUsers list and if not, add to it, set its status to false (not logged in) and set an empty list of messages for this user. Also set its "current" message to -1 as it has no messages currently stored.
 
   * After this, notify the user by sending a message from the server (this is good as the user would normally not have access to a server log and can't see if their command worked or what is going on) and print a message on the server.
 
-  * I have chosen to not log in the user after registering automatically, as many other services/websites don't do that, and the user can just easily use the `login` command instead.
+  * I have chosen to not log in the user after registering automatically, as many other services/websites don't do that, and the user can just easily use the "login" command to log in after registering
 
 * `login` reads the name and checks if the client is currently logged in. If it's not, it checks if the nickname is registered. Then it adds the client's ID to that nickname's list of logged in clients, allowing multiple clients to log in as the same nickname. Next it sets log in to true for the client and the nickname list and notifies the server and client. The next bit of code checks if there have been any messages that have been sent to this nickname while it was logged out and if there have, displays them and sets the "current" message as the latest message.
 
 * `logout` logs the user out if they're logged in by removing the client ID's from the list of IDs associated with the logged in nickname. IF no other clients are logged in to this nickname, the status of the nickname is set to `false` meaning it's logged out. The Client's name is then set to null, and `loggedIn` set to false.
 
-  * The program doesn't quit after being logged out. This makes the user experience more pleasant as if the user wants to e.g. log in to another account, they can without starting the client again. If the user does want to quit, they can just enter the `quit` command after logging out.
+  * The program doesn't quit after being logged out. This makes the user experience more friendly as if the user wants to e.g. log in to another account, they can without starting the client again. If the user does want to quit, they can just enter the `quit` command after logging out.
 
-* `quit` does everything the same as `logout` if the user is logged in, and then after sets `running` to false which ends the thread, as well as all the other related threads.
+* `quit` does everything the same as `logout` if the user is logged in, and then after sets `running` to false which ends the thread, and in effect all the other related threads.
 
 * `send` gets the recipient and the message contents. If the user is logged in it then tries to send the message - is the recipient isn't registered, it tells the server and user that the message is for a nonexistent recipient.
 
-* A `message` object is then created and added to the blocking queues of all clients currently logged in as the recipient. The message is then stored on the server in the `messageStore` `ConcurrentHashMap` and if the user is logged in, also sets the recipient's "current" message to this one that has just been sent. At the end notify the server that messages have been sent - this could realistically either be taken out or reduced to just "myClientsName + sent a message" as it may be a privacy concern.
+* A `message` object is then created and added to the blocking queues of all clients currently logged in as the recipient. The message is then stored on the server in `messageStore` and if the recipient is logged in, also sets the recipient's "current" message to this one that has just been sent. At the end notify the server that messages have been sent - this could realistically either be taken out or as it may be a privacy concern, but for such a simple application it should be fine.
 
   * The sender is notified about the message being sent so they know their request has worked.
 
-* `next` and `previous` work similarly in the sense that they both check if the user is logged in, they get the client's stored messages (if they have messages and if it's possible i.e. can't get the next message if the "current" message is already the newest message), set the "current" message to that message and then put it into the client's message queue without storing it. The server is notified of this.
+* `next` and `previous` work similarly in the sense that they both check if the user is logged in, they get the client's stored messages (if they have messages and if it's possible i.e. can't get the next message if the "current" message is already the newest message), set the "current" message to that message and then put it into the client's message queue. The server is notified of this.
 
 * `delete` gets the current message if messages are being stored for the user, removes it from the `messageStore` `ConcurrentHashMap` and sets the current message to the "next" message, if not possible then to the previous one and if no messages are left, then to -1. The server is notified of this behaviour.
 
 
-`ClientReceiver`, `ServerSender` and `Message` have been left essentially untouched, apart from comments and formatting.
+`ClientReceiver`, `ServerSender` and `Message` have been left essentially untouched at this point, apart from comments and formatting.
 
 ##Extra Functionality
 
 * I've chosen to get the server to save all users' messages (along with the "current" messages and the registered users list) to a file, and then when the server is restarted, to read from the file. This essentially preserves the whole state of the server on restart.
 
-* In order to achieve this I also had to get the server to get input from the user, so the user can enter "quit" on the server. This also added extra functionality in a way as now I can run implement server commands very easily, however I've limited it to just `quit` for this assignment.
+* In order to achieve this I also added functionality for user input inside the server console window. This also added extra functionality as now I can implement server commands very easily (such as various server maintenance commands), however I've limited it to just `quit` for this assignment.
 
-  * I've implemented this by having the server start a new thread `ServerInputReceiver` which reads input from the user. I had to write a new thread as the server is constantly listening to new client connections, which blocks the server and wouldn't allow it to listen to input. When "quit" is entered, the server port is closed and the `AtomicBoolean` running set to false. The server then ends when all clients have disconnected - I could have forced a quit here, however for this assignment is would be better to make sure all client threads are ended gracefully before shutting down the server.
+  * I've implemented this by having the server start a new thread `ServerInputReceiver` which reads input from the user. I had to write a new thread as the server is constantly listening to new client connections, which blocks the server and wouldn't allow it to listen to input. When "quit" is entered, the server port is closed and the `AtomicBoolean` running set to false. The server then ends when all clients have disconnected - I could have forced a quit here, however for this assignment it would be better to make sure all client threads are ended gracefully before shutting down the server.
 
 * The `registeredUsers`, `messageStore` and `currentMessageMap` objects are all stored in a file in the directory `/serverdata/userData.ser` after being serialized. To achieve this I also had to get the `Message` object to implement `Serializable` as `currentMessageMap`stores `Message` objects.
 
 * As an extra, I've also added the command `current` that the user can enter. I felt that would go well with the existing `next` and `previous` methods, especially as now that the messages are stored in a file, a user might want to come back, log back in and check what their "current" message is easily.
 
-* If it counts, I have also provided extra logging messages to the server and client so the user knows exactly what is going on.
-
-* As mentioned before, if a user has been logged out and messages were sent to it, after logging back in they will get displayed their missed messages.
+* If this counts as extra functionality, if a user has been logged out and messages were sent to it, after logging back in they will get displayed their missed messages (I've mentioned this in the description for the `send` command as well).
