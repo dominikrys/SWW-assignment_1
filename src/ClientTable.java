@@ -8,21 +8,21 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class ClientTable {
 
-	// ConcurrentMap of queues shared by all clients
-	private ConcurrentMap<Integer, BlockingQueue<Message>> queueTable = new ConcurrentHashMap<>();
+  // ConcurrentMap of queues shared by all clients
+  private ConcurrentMap<Integer, BlockingQueue<Message>> queueTable = new ConcurrentHashMap<>();
 
-	// Method for adding new clients
-	public void add(Integer clientID) {
-		queueTable.put(clientID, new LinkedBlockingQueue<Message>());
-	}
+  // Method for adding new clients
+  public void add(Integer clientID) {
+    queueTable.put(clientID, new LinkedBlockingQueue<Message>());
+  }
 
-	// Get a client's queue and return null if it doesn't exist
-	public BlockingQueue<Message> getQueue(Integer clientID) {
-		return queueTable.get(clientID);
-	}
+  // Get a client's queue and return null if it doesn't exist
+  public BlockingQueue<Message> getQueue(Integer clientID) {
+    return queueTable.get(clientID);
+  }
 
-	// Remove client from table
-	public void remove(Integer clientID) {
-		queueTable.remove(clientID);
-	}
+  // Remove client from table
+  public void remove(Integer clientID) {
+    queueTable.remove(clientID);
+  }
 }
