@@ -6,8 +6,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 
-// Gets messages from client and puts them in a queue, for another
-// thread to forward to the appropriate client.
+// Gets messages from client and puts them in a queue, for another thread to forward to the
+// appropriate client.
 
 public class ServerReceiver extends Thread {
   // Declare variables
@@ -226,7 +226,7 @@ public class ServerReceiver extends Thread {
                       // Check which the last message that was read was and print any that haven't
                       // been read by placing them in the message queue
                       if (currentMessageMap.get(myClientsName) != extractedMessages.size() - 1) {
-                        Report.behaviour("You've missed these messages while being logged out: ");
+                        sendServerMessage("You've missed these messages while being logged out: ");
                         while (currentMessageMap.get(myClientsName) != extractedMessages.size()
                             - 1) {
                           currentMessageMap.put(myClientsName,
@@ -395,28 +395,29 @@ public class ServerReceiver extends Thread {
                 if (text != null) {
                   if (loggedIn == true) {
                     // Check if the recipient exists
-                    if (nicknameToIDMap.get(recipient) == null) {
+                    if (registeredUsers.containsKey(recipient) == false) {
                       Report.error("Message " + text + " to unexistent recipient " + recipient);
                       sendServerMessage("Message sent to a nonexistent recipient " + recipient);
                     } else {
                       // Create a message object with the appropriate information
                       Message msg = new Message(myClientsName, text);
 
-                      // See how many client IDs there are with of the same name but different ID to
+                      // If the user is logged in extract IDs and put message in blocking queue. See
+                      // how many client IDs there are with of the same name but different ID to
                       // allow a a user to have multiple copies running (i.e. all client IDs logged
-                      // in
-                      // to the same account will receive the message)
-                      ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
-                      extractedIDs = nicknameToIDMap.get(recipient);
+                      // in to the same account will receive the message)
+                      if (registeredUsers.get(recipient) == true) {
+                        ArrayList<Integer> extractedIDs = new ArrayList<Integer>();
+                        extractedIDs = nicknameToIDMap.get(recipient);
 
-                      for (Integer recipientID : extractedIDs) {
-                        BlockingQueue<Message> recipientsQueue = clientTable.getQueue(recipientID); // Matches
-                                                                                                    // EEEEE
-                                                                                                    // in
-                                                                                                    // ServerSender.java
+                        for (Integer recipientID : extractedIDs) {
+                          BlockingQueue<Message> recipientsQueue =
+                              clientTable.getQueue(recipientID); // Matches EEEEE in
+                                                                 // ServerSender.java
 
-                        if (recipientsQueue != null) {
-                          recipientsQueue.offer(msg);
+                          if (recipientsQueue != null) {
+                            recipientsQueue.offer(msg);
+                          }
                         }
                       }
 
@@ -428,16 +429,18 @@ public class ServerReceiver extends Thread {
                       extractedMessages.add(msg);
                       messageStore.put(recipient, extractedMessages);
 
-                      // Set the message that has just been sent to be the current message if the
-                      // user
-                      // is logged in
+                      // Set the message that has just been sent to be the current message and notify user
                       if (registeredUsers.get(recipient) == true) {
                         currentMessageMap.put(recipient, extractedMessages.size() - 1);
+                        
+                        sendServerMessage("Message sent to " + recipient);
+                      } else {
+                        sendServerMessage(recipient + " is currently logged out, the message will be delivered once they log back in.");
                       }
-
-                      // Notify server and user of behaviour
+                      
+                      // Notify server
                       Report.behaviour(myClientsName + " sent a message to " + recipient);
-                      sendServerMessage("Message sent to " + recipient);
+                      
                     }
                   } else {
                     // Notify server and client of errors

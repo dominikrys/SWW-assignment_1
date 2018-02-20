@@ -66,6 +66,8 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 * A `message` object is then created and added to the blocking queues of all clients currently logged in as the recipient. The message is then stored on the server in `messageStore` and if the recipient is logged in, also sets the recipient's "current" message to this one that has just been sent. At the end notify the server that messages have been sent - this could realistically either be taken out or as it may be a privacy concern, but for such a simple application it should be fine.
 
   * The sender is notified about the message being sent so they know their request has worked.
+  
+  * If the recipient is logged out, a message is sent to the sender saying that the recipient will receive the message when logged back in.
 
 * `next` and `previous` work similarly in the sense that they both check if the user is logged in, they get the client's stored messages (if they have messages and if it's possible i.e. can't get the next message if the "current" message is already the newest message), set the "current" message to that message and then put it into the client's message queue. The server is notified of this.
 
@@ -80,9 +82,9 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 
 * In order to achieve this I also added functionality for user input inside the server console window. This also added extra functionality as now I can implement server commands very easily (such as various server maintenance commands), however I've limited it to just `quit` for this assignment.
 
-  * I've implemented this by having the server start a new thread `ServerInputReceiver` which reads input from the user. I had to write a new thread as the server is constantly listening to new client connections, which blocks the server and wouldn't allow it to listen to input. When "quit" is entered, the server port is closed and the `AtomicBoolean` running set to false. The server then ends when all clients have disconnected - I could have forced a quit here, however for this assignment it would be better to make sure all client threads are ended gracefully before shutting down the server.
+  * I've implemented this by having the server start a new thread `ServerInputReceiver` which reads input from the user. I had to write a new thread as the server is constantly listening to new client connections, which blocks the server and wouldn't allow it to listen to input. When "quit" is entered, the server port is closed and the `AtomicBoolean` running set to false. The server then ends when all clients have disconnected - I could have forced a quit here, however for this assignment it would be better to make sure all client threads are ended gracefully before shutting down the server. To instantly shut down the server, make sure all clients have quit.
 
-* The `registeredUsers`, `messageStore`, `nicknameToIDMap` and `currentMessageMap` objects are all stored in a file in the directory `/serverdata/userData.ser` after being serialized. To achieve this I also had to get the `Message` object to implement `Serializable` as `currentMessageMap`stores `Message` objects.
+* The `registeredUsers`, `messageStore`, and `currentMessageMap` objects are all stored in a file in the directory `/serverdata/userData.ser` after being serialized. To achieve this I also had to get the `Message` object to implement `Serializable` as `currentMessageMap`stores `Message` objects.
 
 * As an extra, I've also added the command `current` that the user can enter. I felt that would go well with the existing `next` and `previous` methods and it allows the user to actually check what their "current" message is.
 
