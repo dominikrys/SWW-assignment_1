@@ -41,6 +41,8 @@ public class ServerInputReceiver extends Thread {
           serverSocket.close();
           Report.behaviour(
               "Quit request received, server will quit when all connected clients have quit...");
+        } else {
+          Report.error("Command " + userInput + " not recognised");
         }
       } catch (IOException e) {
         System.out.println("Quitting: " + e.getMessage());

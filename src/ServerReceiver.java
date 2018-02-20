@@ -226,6 +226,7 @@ public class ServerReceiver extends Thread {
                       // Check which the last message that was read was and print any that haven't
                       // been read by placing them in the message queue
                       if (currentMessageMap.get(myClientsName) != extractedMessages.size() - 1) {
+                        Report.behaviour("You've missed these messages while being logged out: ");
                         while (currentMessageMap.get(myClientsName) != extractedMessages.size()
                             - 1) {
                           currentMessageMap.put(myClientsName,
@@ -396,7 +397,7 @@ public class ServerReceiver extends Thread {
                     // Check if the recipient exists
                     if (nicknameToIDMap.get(recipient) == null) {
                       Report.error("Message " + text + " to unexistent recipient " + recipient);
-                      sendServerMessage("Message sent to a nonexistent recipient" + recipient);
+                      sendServerMessage("Message sent to a nonexistent recipient " + recipient);
                     } else {
                       // Create a message object with the appropriate information
                       Message msg = new Message(myClientsName, text);

@@ -35,7 +35,7 @@ class Client {
     } catch (UnknownHostException e) {
       Report.errorAndGiveUp("Unknown host: " + hostname);
     } catch (IOException e) {
-      Report.errorAndGiveUp("The server doesn't seem to be running " + e.getMessage());
+      Report.errorAndGiveUp("The server doesn't seem to be running or has quit " + e.getMessage());
     }
 
     // Create a thread for sending to and a thread for receiving from the server

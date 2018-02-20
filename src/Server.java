@@ -38,7 +38,7 @@ public class Server {
     // Declare ClientTable which will be responsible for message queues for clients
     ClientTable clientTable = new ClientTable();
 
-    // ConcurrentHashMap of currently logged clients and their usernames
+    // ConcurrentHashMap of currently logged in clients and their usernames
     ConcurrentHashMap<String, ArrayList<Integer>> nicknameToIDMap =
         new ConcurrentHashMap<String, ArrayList<Integer>>();
 
@@ -68,6 +68,7 @@ public class Server {
         messageStore =
             (ConcurrentHashMap<String, ArrayList<Message>>) objectInputStream.readObject();
         currentMessageMap = (ConcurrentHashMap<String, Integer>) objectInputStream.readObject();
+        nicknameToIDMap = (ConcurrentHashMap<String, ArrayList<Integer>>) objectInputStream.readObject();
 
         // Close streams
         objectInputStream.close();
@@ -150,8 +151,9 @@ public class Server {
       outStream.writeObject(registeredUsers);
       outStream.writeObject(messageStore);
       outStream.writeObject(currentMessageMap);
+      outStream.writeObject(nicknameToIDMap);
       Report.behaviour(
-          "registeredUsers, messageStore and currentMessageMap written to serverdata/userdata.ser");
+          "All ConcurrentHashMaps written to serverdata/userdata.ser");
 
       // Close streams
       outStream.close();

@@ -82,8 +82,8 @@ Now run using `java Client server-hostname` instead of also specifying the name.
 
   * I've implemented this by having the server start a new thread `ServerInputReceiver` which reads input from the user. I had to write a new thread as the server is constantly listening to new client connections, which blocks the server and wouldn't allow it to listen to input. When "quit" is entered, the server port is closed and the `AtomicBoolean` running set to false. The server then ends when all clients have disconnected - I could have forced a quit here, however for this assignment it would be better to make sure all client threads are ended gracefully before shutting down the server.
 
-* The `registeredUsers`, `messageStore` and `currentMessageMap` objects are all stored in a file in the directory `/serverdata/userData.ser` after being serialized. To achieve this I also had to get the `Message` object to implement `Serializable` as `currentMessageMap`stores `Message` objects.
+* The `registeredUsers`, `messageStore`, `nicknameToIDMap` and `currentMessageMap` objects are all stored in a file in the directory `/serverdata/userData.ser` after being serialized. To achieve this I also had to get the `Message` object to implement `Serializable` as `currentMessageMap`stores `Message` objects.
 
-* As an extra, I've also added the command `current` that the user can enter. I felt that would go well with the existing `next` and `previous` methods, especially as now that the messages are stored in a file, a user might want to come back, log back in and check what their "current" message is easily.
+* As an extra, I've also added the command `current` that the user can enter. I felt that would go well with the existing `next` and `previous` methods and it allows the user to actually check what their "current" message is.
 
 * If this counts as extra functionality, if a user has been logged out and messages were sent to it, after logging back in they will get displayed their missed messages (I've mentioned this in the description for the `send` command as well).
