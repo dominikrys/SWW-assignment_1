@@ -1,4 +1,6 @@
-# Software Workshop - Assignment 1 - Messaging System
-### By Dominik Rys (dxr714)
+# Java Messaging System
+## 1st year Software Workshop module assignment
 
-SOLUTION.md provided in src folder
+A messaging system in Java with afeaturing a client-server model.
+
+The SOLUTION.md file in the source folder explains how the program works.
